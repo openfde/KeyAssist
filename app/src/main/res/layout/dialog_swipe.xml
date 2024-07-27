@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/dialog_swipe_frame"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#77000000">
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_gravity="center_horizontal"
+        android:layout_width="800px"
+        android:layout_height="400px">
+
+        <TextView
+            android:id="@+id/tv_hint1"
+            android:alpha="0.6"
+            android:textSize="30sp"
+            android:textColor="#FF0000"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            android:text="点击屏幕确定开始位置"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+
+        <LinearLayout
+            android:layout_marginTop="15px"
+            android:orientation="vertical"
+            android:visibility="gone"
+            android:id="@+id/gl_input"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+
+
+            <TextView
+                android:layout_marginTop="10px"
+                android:textSize="20sp"
+                android:id="@+id/dialog_add_start_x"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+            <TextView
+                android:layout_marginTop="10px"
+                android:textSize="20sp"
+                android:id="@+id/dialog_add_start_y"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+            <TextView
+                android:layout_marginTop="10px"
+                android:textSize="20sp"
+                android:id="@+id/dialog_add_end_x"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+            <TextView
+                android:layout_marginTop="10px"
+                android:textSize="20sp"
+                android:id="@+id/dialog_add_end_y"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+            <TextView
+                android:layout_marginTop="10px"
+                android:textSize="20sp"
+                android:id="@+id/dialog_add_point_keycode"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+            <EditText
+                android:layout_marginTop="10px"
+                android:inputType="number"
+                android:id="@+id/dialog_swip_duration"
+                android:hint="填写持续时间(ms)"
+                android:layout_width="match_parent"
+                android:layout_height="40dp"/>
+
+
+            <LinearLayout
+                android:layout_marginTop="10px"
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+                <Button
+                    android:visibility="gone"
+                    android:id="@+id/swipe_bt_commit"
+                    android:textSize="16sp"
+                    android:text="确定"
+                    android:layout_width="80dp"
+                    android:layout_height="40dp" />
+                <Button
+                    android:visibility="gone"
+                    android:id="@+id/swipe_bt_cancel"
+                    android:textSize="16sp"
+                    android:text="取消"
+                    android:layout_width="80dp"
+                    android:layout_height="40dp" />
+            </LinearLayout>
+        </LinearLayout>
+
+
+
+    </LinearLayout>
+
+
+
+
+
+
+
+</FrameLayout>

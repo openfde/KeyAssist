@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:gravity="center_horizontal"
+    android:background="#123456"
+    android:layout_width="150dp"
+    android:layout_height="200dp">
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/key_mapping_recyclerview"
+        android:background="#123456"
+        android:layout_width="150dp"
+        android:layout_height="200dp"/>
+    <ImageView
+        android:layout_marginBottom="5dp"
+        android:layout_marginTop="10dp"
+        android:id="@+id/dropdown_menu_add"
+        android:src="@drawable/dropdown_menu_add"
+        android:layout_width="20dp"
+        android:layout_height="20dp"/>
+</LinearLayout>

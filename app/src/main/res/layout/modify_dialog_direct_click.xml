@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_gravity="center"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+
+    <ImageView
+        android:layout_alignParentTop="true"
+        android:layout_alignParentRight="true"
+        android:src="@drawable/close"
+        android:id="@+id/modify_dialog_tap_click_delete"
+        android:layout_width="15dp"
+        android:layout_height="15dp"/>
+
+    <RelativeLayout
+        android:layout_centerInParent="true"
+        android:id="@+id/modify_dialog_direct_click_layout"
+        android:background="@drawable/modify_dialog_direct_click_layout"
+        android:orientation="vertical"
+        android:layout_gravity="center"
+        android:layout_width="78dp"
+        android:layout_height="78dp">
+
+
+
+        <ImageView
+            android:background="@drawable/modify_dialog_direct_click_center_back"
+            android:layout_centerInParent="true"
+            android:id="@+id/modify_dialog_direct_click_center"
+            android:src="@drawable/modify_dialog_direct_click_center"
+            android:layout_width="40dp"
+            android:layout_height="40dp"/>
+
+        <TextView
+            android:textSize="12sp"
+            android:layout_alignParentTop="true"
+            android:text="W"
+            android:gravity="center"
+            android:textColor="#FFFFFF"
+            android:id="@+id/modify_dialog_direct_click_up"
+            android:layout_centerInParent="true"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+
+        <TextView
+            android:textSize="12sp"
+            android:layout_margin="0dp"
+            android:padding="0dp"
+            android:layout_alignParentBottom="true"
+            android:text="S"
+            android:gravity="center"
+            android:textColor="#FFFFFF"
+            android:id="@+id/modify_dialog_direct_click_down"
+            android:layout_centerInParent="true"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+
+        <TextView
+
+            android:textSize="12sp"
+            android:layout_marginLeft="5dp"
+            android:padding="0dp"
+            android:layout_alignParentLeft="true"
+            android:text="A"
+            android:textColor="#FFFFFF"
+            android:id="@+id/modify_dialog_direct_click_left"
+            android:layout_centerInParent="true"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+
+        <TextView
+            android:textSize="12sp"
+            android:padding="0dp"
+            android:layout_marginRight="5dp"
+            android:layout_alignParentRight="true"
+            android:text="D"
+            android:gravity="center"
+            android:textColor="#FFFFFF"
+            android:id="@+id/modify_dialog_direct_click_right"
+            android:layout_centerInParent="true"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+    </RelativeLayout>
+
+    <TextView
+        android:id="@+id/modify_dialog_direct_click_hint"
+        android:textColor="#FFFFFF"
+        android:layout_centerHorizontal="true"
+        android:layout_alignParentBottom="true"
+        android:textSize="8sp"
+        android:text="点击按键改变值"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
+
+</RelativeLayout>

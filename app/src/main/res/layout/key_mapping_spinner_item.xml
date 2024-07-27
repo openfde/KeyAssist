@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:background="#123456"
+    android:orientation="horizontal"
+    android:layout_width="match_parent"
+    android:layout_marginTop="10dp"
+    android:layout_height="25dp">
+    <LinearLayout
+
+        android:layout_gravity="center_vertical"
+        android:layout_weight="9"
+        android:orientation="horizontal"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content">
+        <ImageView
+            android:layout_marginLeft="10dp"
+            android:id="@+id/key_mapping_spinner_item_choose"
+            android:src="@drawable/key_mapping_spinner_item_choose"
+            android:layout_width="15dp"
+            android:layout_height="15dp"/>
+        <EditText
+            android:maxLines="1"
+            android:inputType="text"
+            android:imeOptions="actionDone"
+            android:enabled="false"
+            android:cursorVisible="true"
+            android:background="@null"
+            android:layout_marginLeft="10dp"
+            android:id="@+id/key_mapping_spinner_item_text"
+            android:textColor="#FFFFFF"
+            android:text="预设按键"
+            android:textSize="12sp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+        </EditText>
+
+
+        <ImageView
+            android:layout_marginLeft="15dp"
+            android:id="@+id/key_mapping_spinner_item_edit"
+            android:src="@drawable/key_mapping_spinner_item_edit"
+            android:layout_width="15dp"
+            android:layout_height="15dp"/>
+        <ImageView
+            android:layout_marginLeft="15dp"
+            android:id="@+id/key_mapping_spinner_item_delete"
+            android:src="@drawable/key_mapping_spinner_item_delete"
+            android:layout_width="15dp"
+            android:layout_height="15dp"/>
+    </LinearLayout>
+
+    <ImageView
+        android:visibility="gone"
+        android:layout_weight="1"
+        android:layout_gravity="center_vertical"
+        android:id="@+id/key_mapping_spinner_item_icon"
+        android:layout_margin="5dp"
+        android:src="@drawable/key_mapping_spinner_down"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        tools:ignore="RtlHardcoded" />
+</LinearLayout>

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:layout_marginTop="15px"
+    tools:context=".fragment.ConfigManageFragment">
+
+    <LinearLayout
+        android:id="@+id/config_manage_all_config"
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <ImageView
+            android:layout_marginLeft="15px"
+            android:src="@drawable/all_config"
+            android:layout_width="45px"
+            android:layout_height="45px"/>
+        <TextView
+            android:textSize="16sp"
+            android:layout_gravity="center_vertical"
+            android:layout_marginLeft="20px"
+            android:textColor="#000000"
+            android:textStyle="bold"
+            android:text="查看所有配置"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_marginTop="15dp"
+        android:id="@+id/config_manage_wz"
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <ImageView
+            android:layout_marginLeft="15px"
+            android:src="@drawable/all_config"
+            android:layout_width="45px"
+            android:layout_height="45px"/>
+        <TextView
+            android:textSize="16sp"
+            android:layout_gravity="center_vertical"
+            android:layout_marginLeft="20px"
+            android:textColor="#000000"
+            android:textStyle="bold"
+            android:text="王者荣耀"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+    </LinearLayout>
+
+</LinearLayout>
