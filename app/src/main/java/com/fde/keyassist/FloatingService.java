@@ -15,6 +15,7 @@ import android.os.Build;
 import android.os.IBinder;
 import android.util.DisplayMetrics;
 import android.view.Gravity;
+import android.view.InputDevice;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -147,6 +148,8 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
 
     public void onkey(){
         floatView.setFocusableInTouchMode(true);
+        // 鼠标监听事件
+
         // 按键事件
         floatView.setOnKeyListener(new View.OnKeyListener() {
             @Override
