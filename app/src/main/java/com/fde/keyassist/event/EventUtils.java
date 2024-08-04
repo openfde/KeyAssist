@@ -47,6 +47,21 @@ public class EventUtils {
                 2);
     }
 
+    // 连击事件
+    public static void doubleClick(int x,int y,int count){
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                for(int i=0;i<count;i++){
+                    long now = SystemClock.uptimeMillis();
+                    injectMotionEvent(InputDevice.SOURCE_TOUCHSCREEN, MotionEvent.ACTION_DOWN, now, now, x, y, 1.0f,
+                            0);
+                    injectMotionEvent(InputDevice.SOURCE_TOUCHSCREEN, MotionEvent.ACTION_UP, now, now, x, y, 0.0f, 0);
+                }
+            }
+        }).start();
+    }
+
     // 点击事件
     public static void tapClick(int x, int y) {
         new Thread(new Runnable() {
