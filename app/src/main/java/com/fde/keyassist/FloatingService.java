@@ -37,6 +37,7 @@ import com.fde.keyassist.adapter.PlaySpinnerAdapter;
 import com.fde.keyassist.dialog.ApplyDialog;
 import com.fde.keyassist.dialog.ModifyDialog;
 import com.fde.keyassist.entity.DirectMappingEntity;
+import com.fde.keyassist.entity.DoubleClickMappingEntity;
 import com.fde.keyassist.entity.KeyMappingEntity;
 import com.fde.keyassist.entity.Plan;
 import com.fde.keyassist.event.EventUtils;
@@ -73,6 +74,8 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
 
     private List<DirectMappingEntity> directMappingEntities;
 
+    private List<DoubleClickMappingEntity> doubleClickMappingEntities;
+
     private View floatView;
 
     private WindowManager.LayoutParams floatParams;
@@ -96,6 +99,9 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
 
     private List<Plan> plans;
 
+    private ImageView key_mapping_double_click;
+
+    private Integer curCount = 1;
 
     @Nullable
     @Override
@@ -163,6 +169,8 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
                             || eventType == Constant.DIRECTION_KEY_DOWN
                             || eventType == Constant.DIRECTION_KEY_RIGHT) {
                         EventUtils.diretClick(floatView,keyEvent, pos[0], pos[1], eventType);
+                    }else if (eventType == Constant.DOUBLE_CLICK_EVENT){
+                        EventUtils.doubleClick(pos[0], pos[1],curCount);
                     }
                 }
                 return true;
@@ -198,6 +206,10 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
         key_mapping_plan_text = mainView.findViewById(R.id.key_mapping_plan_text);
         key_mapping_plan_text.setText(Constant.planName);
         key_mapping_spinner_down = mainView.findViewById(R.id.key_mapping_spinner_down);
+
+        key_mapping_double_click = mainView.findViewById(R.id.key_mapping_double_click);
+        key_mapping_double_click.setOnClickListener(this);
+
         isMainWindow = true;
 
 
@@ -311,6 +323,21 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
 
         }
 
+        if(doubleClickMappingEntities != null && !doubleClickMappingEntities.isEmpty()){
+            Iterator iterator = doubleClickMappingEntities.iterator();
+            while(iterator.hasNext()){
+                DoubleClickMappingEntity keyMapping = (DoubleClickMappingEntity) iterator.next();
+                if(keyMapping.getKeycode() != null && keyMapping.getKeycode() == keycode){
+                    x = keyMapping.getX();
+                    y = keyMapping.getY();
+                    eventType = Constant.DOUBLE_CLICK_EVENT;
+                    curCount = keyMapping.getCount();
+                    return new int[]{x,y};
+                }
+            }
+
+        }
+
         if(directMappingEntities != null && !directMappingEntities.isEmpty()){
             Iterator iterator = directMappingEntities.iterator();
             while(iterator.hasNext()){
@@ -405,12 +432,22 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
                  if(!editAndCancal){
 //                     startModify("方案一");
                      modifyDialog.setEventType(Constant.TAP_CLICK_EVENT); //单击事件
+//                     key_mapping_tap_click.setBackground(R.drawable.key_mapping_key_background_click);
+//                     key_mapping_tap_click.setBackgroundResource(R.drawable.key_mapping_key_background_click);
+                     setButtonBack(key_mapping_tap_click);
                  }
                  break;
              case R.id.key_mapping_direct_click:
                  if(!editAndCancal){
 //                     startModify("方案一");
                      modifyDialog.setEventType(Constant.DIRECTION_KEY); //单击事件
+                     setButtonBack(key_mapping_direct_click);
+                 }
+                 break;
+             case R.id.key_mapping_double_click:
+                 if(!editAndCancal){
+                     modifyDialog.setEventType(Constant.DOUBLE_CLICK_EVENT); //单击事件
+                     setButtonBack(key_mapping_double_click);
                  }
                  break;
              case R.id.key_mapping_apply:
@@ -422,6 +459,7 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
                      applyDialog = new ApplyDialog(Constant.planName,this);
                      keyMappingEntities = applyDialog.applyTapClick();
                      directMappingEntities = applyDialog.applyDirect();
+                     doubleClickMappingEntities = applyDialog.applyDoubleClick();
                      isApply = true;
                      isMainWindow = false;
                      key_mapping_apply.setText("取消");
@@ -436,6 +474,7 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
                  }
                  break;
              case R.id.key_mapping_save:
+                 setButtonBack(null);
                  if(!editAndCancal) {
                      modifyDialog.save();
                      key_mapping_cancel.setText("编辑");
@@ -452,6 +491,7 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
                  }
                  break;
              case R.id.key_mapping_cancel:
+                 setButtonBack(null);
                  // 编辑
                      if(editAndCancal){
                          key_mapping_save.setText("保存");
@@ -487,6 +527,15 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
     @Override
     public void onNothingSelected(AdapterView<?> adapterView) {
 
+    }
+
+    public void setButtonBack(ImageView imageView){
+        key_mapping_tap_click.setBackgroundResource(R.drawable.key_mapping_key_background);
+        key_mapping_direct_click.setBackgroundResource(R.drawable.key_mapping_key_background);
+        key_mapping_double_click.setBackgroundResource(R.drawable.key_mapping_key_background);
+        if(imageView != null){
+            imageView.setBackgroundResource(R.drawable.key_mapping_key_background_click);
+        }
     }
 
 }

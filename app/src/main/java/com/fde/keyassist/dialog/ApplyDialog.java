@@ -13,12 +13,14 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.fde.keyassist.R;
 import com.fde.keyassist.entity.DirectMappingEntity;
+import com.fde.keyassist.entity.DoubleClickMappingEntity;
 import com.fde.keyassist.entity.KeyMappingEntity;
 import com.fde.keyassist.entity.Plan;
 import com.fde.keyassist.util.Constant;
@@ -143,6 +145,41 @@ public class ApplyDialog {
 //        applyTapClick();
 //        applyDirect();
 //    }
+
+    public List<DoubleClickMappingEntity> applyDoubleClick(){
+        List<DoubleClickMappingEntity> curKeyMappingEntity = new ArrayList<>();
+        List<Plan> plans = LitePal.where("planName = ?",planName).find(Plan.class);
+        if(plans != null && plans.size() >=1){
+            Plan plan = plans.get(0);
+            curKeyMappingEntity = LitePal.where("planId = ?", plan.getId().toString()).find(DoubleClickMappingEntity.class);
+        }
+        for (DoubleClickMappingEntity entity : curKeyMappingEntity){
+            if(entity.getEventType() == Constant.DOUBLE_CLICK_EVENT) {
+                View view = LayoutInflater.from(context).inflate(R.layout.modify_dialog_double_click, null, false);
+                ImageView modify_dialog_double_click_delete = view.findViewById(R.id.modify_dialog_double_click_delete);
+                modify_dialog_double_click_delete.setVisibility(View.GONE);
+                TextView modify_dialog_double_click_count = view.findViewById(R.id.modify_dialog_double_click_count);
+                modify_dialog_double_click_count.setVisibility(View.GONE);
+                Button modify_dialog_double_click_up = view.findViewById(R.id.modify_dialog_double_click_up);
+                modify_dialog_double_click_up.setVisibility(View.GONE);
+                Button modify_dialog_double_click_down = view.findViewById(R.id.modify_dialog_double_click_down);
+                modify_dialog_double_click_down.setVisibility(View.GONE);
+                TextView modify_dialog_tap_click_hint = view.findViewById(R.id.modify_dialog_tap_click_hint);
+                modify_dialog_tap_click_hint.setVisibility(View.GONE);
+                params.x = entity.getX() - params.width/2;
+                params.y = entity.getY() - params.height/2;
+                if(entity.getKeyValue() != null && !entity.getKeyValue().isEmpty()){
+                    TextView apply_dialog_tap_click_edit = view.findViewById(R.id.modify_dialog_double_click_edit);
+                    apply_dialog_tap_click_edit.setText(entity.getKeyValue());
+                }
+                windowManager.addView(view,params);
+                allView.add(view);
+            }
+
+        }
+        return curKeyMappingEntity;
+    }
+
 
     public void cancal(){
         if(windowManager!=null && allView!=null && !allView.isEmpty()){

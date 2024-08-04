@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="oval">
+    <corners android:radius="5dp"/>
+    <!-- 对于圆形，size的宽高相等很重要 -->
+    <stroke android:color="#FF0000" android:width="0.5dp"/>
+    <size android:width="35dp"
+        android:height="35dp" />
+    <padding android:left="5dp" android:bottom="5dp" android:right="5dp" android:top="5dp"/>
+</shape>
