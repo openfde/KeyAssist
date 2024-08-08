@@ -23,6 +23,7 @@ import com.fde.keyassist.entity.DirectMappingEntity;
 import com.fde.keyassist.entity.DoubleClickMappingEntity;
 import com.fde.keyassist.entity.KeyMappingEntity;
 import com.fde.keyassist.entity.Plan;
+import com.fde.keyassist.entity.ScaleMappingEntity;
 import com.fde.keyassist.util.Constant;
 
 import org.litepal.LitePal;
@@ -145,6 +146,37 @@ public class ApplyDialog {
 //        applyTapClick();
 //        applyDirect();
 //    }
+
+    @SuppressLint("MissingInflatedId")
+    public List<ScaleMappingEntity> applyScaleClick(){
+        List<ScaleMappingEntity> curKeyMappingEntity = new ArrayList<>();
+        List<Plan> plans = LitePal.where("planName = ?",planName).find(Plan.class);
+        if(plans != null && plans.size() >=1){
+            Plan plan = plans.get(0);
+            curKeyMappingEntity = LitePal.where("planId = ?", plan.getId().toString()).find(ScaleMappingEntity.class);
+        }
+        for (ScaleMappingEntity entity : curKeyMappingEntity){
+            if(entity.getEventType() == Constant.SCALE) {
+                View view = LayoutInflater.from(context).inflate(R.layout.modify_dialog_scale, null, false);
+                ImageView imageView = view.findViewById(R.id.modify_dialog_scale_delete);
+                imageView.setVisibility(View.GONE);
+                TextView textView = view.findViewById(R.id.modify_dialog_scale_hint);
+                textView.setVisibility(View.GONE);
+
+                params.x = entity.getX() - params.width/2;
+                params.y = entity.getY() - params.height/2;
+                if(entity.getKeyValue() != null && !entity.getKeyValue().isEmpty()){
+                    TextView apply_dialog_tap_click_edit = view.findViewById(R.id.modify_dialog_scale_edit);
+                    apply_dialog_tap_click_edit.setText(entity.getKeyValue());
+                }
+                windowManager.addView(view,params);
+                allView.add(view);
+            }
+
+        }
+        return curKeyMappingEntity;
+    }
+
 
     public List<DoubleClickMappingEntity> applyDoubleClick(){
         List<DoubleClickMappingEntity> curKeyMappingEntity = new ArrayList<>();
