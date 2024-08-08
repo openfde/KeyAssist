@@ -18,6 +18,7 @@ import android.view.View;
 
 
 
+
 import com.fde.keyassist.R;
 import com.fde.keyassist.util.Constant;
 import com.genymobile.scrcpy.Device;
@@ -53,10 +54,11 @@ public class EventUtils {
             @Override
             public void run() {
                 for(int i=0;i<count;i++){
-                    long now = SystemClock.uptimeMillis();
-                    injectMotionEvent(InputDevice.SOURCE_TOUCHSCREEN, MotionEvent.ACTION_DOWN, now, now, x, y, 1.0f,
-                            0);
-                    injectMotionEvent(InputDevice.SOURCE_TOUCHSCREEN, MotionEvent.ACTION_UP, now, now, x, y, 0.0f, 0);
+                    tapClick(x,y);
+//                    long now = SystemClock.uptimeMillis();
+//                    injectMotionEvent(InputDevice.SOURCE_TOUCHSCREEN, MotionEvent.ACTION_DOWN, now, now, x, y, 1.0f,
+//                            0);
+//                    injectMotionEvent(InputDevice.SOURCE_TOUCHSCREEN, MotionEvent.ACTION_UP, now, now, x, y, 0.0f, 0);
                 }
             }
         }).start();

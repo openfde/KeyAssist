@@ -103,6 +103,7 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
 
     private Integer curCount = 1;
 
+
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
