@@ -42,6 +42,7 @@ import com.fde.keyassist.entity.DirectMappingEntity;
 import com.fde.keyassist.entity.DoubleClickMappingEntity;
 import com.fde.keyassist.entity.KeyMappingEntity;
 import com.fde.keyassist.entity.Plan;
+import com.fde.keyassist.entity.ScaleMappingEntity;
 import com.fde.keyassist.event.EventUtils;
 import com.fde.keyassist.util.Constant;
 
@@ -79,6 +80,8 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
 
     private List<DoubleClickMappingEntity> doubleClickMappingEntities;
 
+    private List<ScaleMappingEntity> scaleMappingEntities;
+
     private View floatView;
 
     private WindowManager.LayoutParams floatParams;
@@ -105,6 +108,8 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
     private ImageView key_mapping_double_click;
 
     private Integer curCount = 1;
+
+    private ImageView key_mapping_scale;
 
 
     @Nullable
@@ -186,6 +191,18 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
                         EventUtils.diretClick(floatView,keyEvent, pos[0], pos[1], eventType);
                     }else if (eventType == Constant.DOUBLE_CLICK_EVENT){
                         EventUtils.doubleClick(pos[0], pos[1],curCount);
+                    }else if(eventType == Constant.SCALE){
+                        if(keyEvent.getAction() == KeyEvent.ACTION_DOWN){
+                            Log.d(TAG, "onKey: down:" + keyEvent);
+                            EventUtils.ZoomController.getInstance().setCenter(new EventUtils.Pointer(pos[0], pos[1])).
+                                    startZoom(keyEvent.getRepeatCount(), true);
+                            return true;
+                        }
+                        if(keyEvent.getAction() == KeyEvent.ACTION_UP){
+                            Log.d(TAG, "onKey: up:" + keyEvent);
+                            EventUtils.ZoomController.getInstance().stopZoom();
+                            return true;
+                        }
                     }
                 }
                 return true;
@@ -224,6 +241,9 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
 
         key_mapping_double_click = mainView.findViewById(R.id.key_mapping_double_click);
         key_mapping_double_click.setOnClickListener(this);
+
+        key_mapping_scale = mainView.findViewById(R.id.key_mapping_scale);
+        key_mapping_scale.setOnClickListener(this);
 
         isMainWindow = true;
 
@@ -382,6 +402,19 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
 
         }
 
+        if(scaleMappingEntities != null && !scaleMappingEntities.isEmpty()){
+            Iterator iterator = scaleMappingEntities.iterator();
+            while(iterator.hasNext()){
+                ScaleMappingEntity keyMapping = (ScaleMappingEntity) iterator.next();
+                if(keyMapping.getKeycode() != null && keyMapping.getKeycode() == keycode){
+                    x = keyMapping.getX();
+                    y = keyMapping.getY();
+                    eventType = Constant.SCALE;
+                    return new int[]{x,y};
+                }
+            }
+        }
+
         return new int[]{-1,-1};
     }
 
@@ -465,6 +498,12 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
                      setButtonBack(key_mapping_double_click);
                  }
                  break;
+             case R.id.key_mapping_scale:
+                 if(!editAndCancal){
+                     modifyDialog.setEventType(Constant.SCALE); //单击事件
+                     setButtonBack(key_mapping_scale);
+                 }
+
              case R.id.key_mapping_apply:
                  if(!isApply && editAndCancal){
                      startListenerKey();
@@ -475,6 +514,7 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
                      keyMappingEntities = applyDialog.applyTapClick();
                      directMappingEntities = applyDialog.applyDirect();
                      doubleClickMappingEntities = applyDialog.applyDoubleClick();
+                     scaleMappingEntities = applyDialog.applyScaleClick();
                      isApply = true;
                      isMainWindow = false;
                      key_mapping_apply.setText("取消");
@@ -548,6 +588,7 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
         key_mapping_tap_click.setBackgroundResource(R.drawable.key_mapping_key_background);
         key_mapping_direct_click.setBackgroundResource(R.drawable.key_mapping_key_background);
         key_mapping_double_click.setBackgroundResource(R.drawable.key_mapping_key_background);
+        key_mapping_scale.setBackgroundResource(R.drawable.key_mapping_key_background);
         if(imageView != null){
             imageView.setBackgroundResource(R.drawable.key_mapping_key_background_click);
         }

@@ -157,9 +157,10 @@
             android:layout_width="0dp"
             android:layout_height="match_parent">
             <ImageView
+                android:id="@+id/key_mapping_scale"
                 android:layout_gravity="center"
                 android:background="@drawable/key_mapping_key_background"
-                android:src="@drawable/key_mapping_right_mouse"
+                android:src="@drawable/scale"
                 android:layout_width="30dp"
                 android:layout_height="30dp"/>
             <TextView
@@ -168,7 +169,7 @@
                 android:textColor="#FFFFFF"
                 android:layout_gravity="center"
                 android:textSize="8sp"
-                android:text="鼠标右键"
+                android:text="缩放"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"/>
         </LinearLayout>
