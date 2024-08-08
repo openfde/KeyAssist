@@ -16,13 +16,17 @@ android {
 
     buildTypes {
         release {
-            minifyEnabled true
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
-            signingConfig signingConfigs.debug
-        }
-        debug {
-            applicationIdSuffix '.debug'
             minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    signingConfigs {
+        debug {
+            keyAlias 'androiddebugkey'
+            keyPassword 'android'
+            storeFile file('plugin.keystore')
+            storePassword 'android'
         }
     }
 
@@ -31,22 +35,10 @@ android {
         targetCompatibility JavaVersion.VERSION_1_8
     }
 
-    applicationVariants.all { variant ->
-        variant.outputs.each { output ->
-            def assembledTask = tasks.getByName("assemble${variant.name.capitalize()}")
-
-            assembledTask.doLast {
-                def buildDir = output.outputFile.parent
-                def unsignedApk = output.outputFile
-                def signedApk = new File(buildDir, "KeyAssist.apk")
-                exec {
-                    commandLine 'java', '-Djava.library.path=.', '-jar', 'signapk.jar', 'platform.x509.pem', 'platform.pk8', unsignedApk, signedApk
-                }
-                copy {
-                    from signedApk
-                    into buildDir
-                    rename { "app-debug.apk" }
-                }
+    android.applicationVariants.all { variant ->
+        variant.outputs.all {
+            if (outputFile != null && outputFileName.endsWith('.apk')) {
+                outputFileName = "KeyAssist.apk"
             }
         }
     }
