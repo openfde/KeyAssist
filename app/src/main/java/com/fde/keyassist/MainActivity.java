@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
+import android.app.Instrumentation;
 import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
@@ -35,6 +36,7 @@ public class MainActivity extends Activity{
         Intent intent = new Intent(MainActivity.this,FloatingService.class);
         startService(intent);
         moveTaskToBack(true);
+
 
     }
 
