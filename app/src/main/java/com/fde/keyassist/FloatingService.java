@@ -2,12 +2,14 @@ package com.fde.keyassist;
 
 
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.app.Instrumentation;
 import android.app.Service;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.graphics.PixelFormat;
@@ -30,8 +32,11 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -45,9 +50,13 @@ import com.fde.keyassist.entity.Plan;
 import com.fde.keyassist.entity.ScaleMappingEntity;
 import com.fde.keyassist.event.EventUtils;
 import com.fde.keyassist.util.Constant;
+import com.fde.keyassist.util.FileUtil;
 
 import org.litepal.LitePal;
 
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
@@ -111,6 +120,14 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
 
     private ImageView key_mapping_scale;
 
+    private ImageView dropdown_menu_export;
+
+    private ImageView key_mapping_open_cursor;
+
+    private Boolean cursorMake = false;
+
+    private ImageView dropdown_menu_import;
+
 
     @Nullable
     @Override
@@ -123,8 +140,10 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
     public void onCreate() {
         super.onCreate();
         SQLiteDatabase db = LitePal.getDatabase();
+
         showFloatView();
         applyDialog = new ApplyDialog(Constant.planName,this);
+
     }
 
 
@@ -241,6 +260,9 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
 
         key_mapping_double_click = mainView.findViewById(R.id.key_mapping_double_click);
         key_mapping_double_click.setOnClickListener(this);
+
+        key_mapping_open_cursor = mainView.findViewById(R.id.key_mapping_open_cursor);
+        key_mapping_open_cursor.setOnClickListener(this);
 
         key_mapping_scale = mainView.findViewById(R.id.key_mapping_scale);
         key_mapping_scale.setOnClickListener(this);
@@ -445,15 +467,54 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
     public void onClick(View view) {
          switch (view.getId()){
 
+             case R.id.key_mapping_open_cursor:
+                 if(cursorMake){
+                     openCursor();
+                     cursorMake = !cursorMake;
+                 }else{
+                     closeCursor();
+                     cursorMake = !cursorMake;
+                 }
+
+                 break;
+
              case R.id.key_mapping_plan_linear:
                  View dropdownView = LayoutInflater.from(this).inflate(R.layout.dropdown_menu, null);
                  dropdown_menu_add = dropdownView.findViewById(R.id.dropdown_menu_add);
+                 dropdown_menu_export = dropdownView.findViewById(R.id.dropdown_menu_export);
+                 dropdown_menu_import = dropdownView.findViewById(R.id.dropdown_menu_import);
                  RecyclerView recyclerView = dropdownView.findViewById(R.id.key_mapping_recyclerview);
 
                  plans = LitePal.findAll(Plan.class);
 
                  PlaySpinnerAdapter adapter = new PlaySpinnerAdapter(plans,key_mapping_plan_text);
                  recyclerView.setAdapter(adapter);
+
+                 dropdown_menu_export.setOnClickListener(new View.OnClickListener() {
+                     @Override
+                     public void onClick(View view) {
+                         List<String> list = new ArrayList<>();
+                         List<Plan> planList = LitePal.findAll(Plan.class);
+                         for(Plan plan : planList){
+                             list.add(plan.getPlanName());
+                         }
+                         FileUtil.exportData(list,getApplication());
+                         Toast.makeText(getApplication(),"成功导出文件到根目录keyAssist目录下",Toast.LENGTH_SHORT).show();
+                     }
+                 });
+
+                 dropdown_menu_import.setOnClickListener(new View.OnClickListener(){
+
+                     @SuppressLint("NotifyDataSetChanged")
+                     @Override
+                     public void onClick(View view) {
+                         FileUtil.importData();
+                         plans = LitePal.findAll(Plan.class);
+                         adapter.notifyDataSetChanged();
+                         PlaySpinnerAdapter adapter = new PlaySpinnerAdapter(plans,key_mapping_plan_text);
+                         recyclerView.setAdapter(adapter);
+                     }
+                 });
 
                  dropdown_menu_add.setOnClickListener(new View.OnClickListener() {
                      @Override
@@ -503,7 +564,7 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
                      modifyDialog.setEventType(Constant.SCALE); //单击事件
                      setButtonBack(key_mapping_scale);
                  }
-
+                 break;
              case R.id.key_mapping_apply:
                  if(!isApply && editAndCancal){
                      startListenerKey();
@@ -591,6 +652,56 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
         key_mapping_scale.setBackgroundResource(R.drawable.key_mapping_key_background);
         if(imageView != null){
             imageView.setBackgroundResource(R.drawable.key_mapping_key_background_click);
+        }
+    }
+
+
+
+
+
+
+
+
+    //打开鼠标
+    public void openCursor(){
+        try {
+
+            Process process = Runtime.getRuntime().exec("/system/bin/sh");
+            DataOutputStream os = new DataOutputStream(process.getOutputStream());
+
+            os.writeBytes("su\n");
+            os.writeBytes("/system/bin/setprop fde.show_wayland_cursor true\n");
+            os.writeBytes("/system/bin/setprop fde.click_as_touch true\n");
+            os.writeBytes("/system/bin/setprop fde.inject_as_touch true\n");
+            os.writeBytes("exit\n");
+            os.flush();
+
+            process.waitFor();
+//            Process process = Runtime.getRuntime().exec("/system/bin/sh");
+//            DataOutputStream os = new DataOutputStream(process.getOutputStream());
+//            os.writeBytes("setprop fde.show_wayland_cursor true\n");
+//            os.writeBytes("setprop fde.click_as_touch true\n");
+//            os.writeBytes("setprop fde.inject_as_touch true\n");
+//            os.writeBytes("exit\n");
+//            os.flush();
+//            process.waitFor();
+        } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+    // 关闭鼠标
+    public void closeCursor(){
+        try {
+            Process process = Runtime.getRuntime().exec("/system/bin/sh");
+            DataOutputStream os = new DataOutputStream(process.getOutputStream());
+            os.writeBytes("setprop fde.show_wayland_cursor false\n");
+            os.writeBytes("setprop fde.click_as_touch false\n");
+            os.writeBytes("setprop fde.inject_as_touch false\n");
+            os.writeBytes("exit\n");
+            os.flush();
+            process.waitFor();
+        } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
         }
     }
 

@@ -6,6 +6,14 @@ import org.litepal.crud.LitePalSupport;
 public class DirectMappingEntity extends LitePalSupport {
     private Integer id;
 
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
     private Integer x; //坐标x
 
     private Integer y; // 坐标y
