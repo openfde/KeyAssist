@@ -20,7 +20,7 @@
             android:layout_marginBottom="5dp"
             android:layout_marginTop="10dp"
             android:id="@+id/dropdown_menu_import"
-            android:src="@drawable/dropdown_menu_import"
+            android:src="@drawable/dropdown_menu_export"
             android:layout_width="20dp"
             android:layout_height="20dp"/>
 
@@ -39,7 +39,7 @@
             android:layout_marginBottom="5dp"
             android:layout_marginTop="10dp"
             android:id="@+id/dropdown_menu_export"
-            android:src="@drawable/dropdown_menu_export"
+            android:src="@drawable/dropdown_menu_import"
             android:layout_width="20dp"
             android:layout_height="20dp"/>
     </LinearLayout>

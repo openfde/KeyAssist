@@ -124,9 +124,12 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
 
     private ImageView key_mapping_open_cursor;
 
-    private Boolean cursorMake = false;
+    private Boolean cursorMake = true;
 
     private ImageView dropdown_menu_import;
+
+
+
 
 
     @Nullable
@@ -268,6 +271,7 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
         key_mapping_scale.setOnClickListener(this);
 
         isMainWindow = true;
+
 
 
         if(isApply){
@@ -468,15 +472,21 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
          switch (view.getId()){
 
              case R.id.key_mapping_open_cursor:
-                 if(cursorMake){
-                     openCursor();
-                     cursorMake = !cursorMake;
-                 }else{
-                     closeCursor();
-                     cursorMake = !cursorMake;
+//                 openCursor();
+                 if(!editAndCancal){
+                     if(cursorMake){
+                         modifyDialog.setCursorSwitch(true);
+                         cursorMake = !cursorMake;
+                         setCursorBack(true);
+                     }else{
+                         modifyDialog.setCursorSwitch(false);
+                         cursorMake = !cursorMake;
+                         setCursorBack(false);
+                     }
                  }
-
                  break;
+
+
 
              case R.id.key_mapping_plan_linear:
                  View dropdownView = LayoutInflater.from(this).inflate(R.layout.dropdown_menu, null);
@@ -576,6 +586,12 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
                      directMappingEntities = applyDialog.applyDirect();
                      doubleClickMappingEntities = applyDialog.applyDoubleClick();
                      scaleMappingEntities = applyDialog.applyScaleClick();
+                     Boolean b = applyDialog.applyCursor();
+                     if(b){
+                         openCursor();
+                     }else{
+                         closeCursor();
+                     }
                      isApply = true;
                      isMainWindow = false;
                      key_mapping_apply.setText("取消");
@@ -586,11 +602,13 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
                          applyDialog.cancal();
                          isApply = false;
                          key_mapping_apply.setText("应用");
+                         closeCursor();
                      }
                  }
                  break;
              case R.id.key_mapping_save:
                  setButtonBack(null);
+                 setCursorBack(false);
                  if(!editAndCancal) {
                      modifyDialog.save();
                      key_mapping_cancel.setText("编辑");
@@ -608,6 +626,7 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
                  break;
              case R.id.key_mapping_cancel:
                  setButtonBack(null);
+                 setCursorBack(false);
                  // 编辑
                      if(editAndCancal){
                          key_mapping_save.setText("保存");
@@ -619,6 +638,7 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
                          key_mapping_cancel.setText("取消");
                          startModify(Constant.planName);
                          modifyDialog.showView(); //单击事件
+                         setCursorBack(modifyDialog.getCursorSwitch());
                      }else{
                          key_mapping_save.setText("退出");
                          editAndCancal = true;
@@ -657,7 +677,13 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
 
 
 
-
+    public void setCursorBack(Boolean b){
+        if(b){
+            key_mapping_open_cursor.setBackgroundResource(R.drawable.key_mapping_key_background_click);
+        }else{
+            key_mapping_open_cursor.setBackgroundResource(R.drawable.key_mapping_key_background);
+        }
+    }
 
 
 
@@ -694,7 +720,7 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
         try {
             Process process = Runtime.getRuntime().exec("/system/bin/sh");
             DataOutputStream os = new DataOutputStream(process.getOutputStream());
-            os.writeBytes("setprop fde.show_wayland_cursor false\n");
+            os.writeBytes("setprop fde.show_wayland_cursor true\n");
             os.writeBytes("setprop fde.click_as_touch false\n");
             os.writeBytes("setprop fde.inject_as_touch false\n");
             os.writeBytes("exit\n");

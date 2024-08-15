@@ -3,6 +3,7 @@ package com.fde.keyassist.util;
 import android.content.Context;
 import android.os.Environment;
 
+import com.fde.keyassist.entity.CursorEntity;
 import com.fde.keyassist.entity.DirectMappingEntity;
 import com.fde.keyassist.entity.DoubleClickMappingEntity;
 import com.fde.keyassist.entity.KeyMappingEntity;
@@ -66,6 +67,9 @@ public class FileUtil {
             List<ScaleMappingEntity> curScaleMappingEntity = new ArrayList<>();
             curScaleMappingEntity = LitePal.where("planId = ?", plan.getId().toString()).find(ScaleMappingEntity.class);
 
+            // 获得鼠标事件
+            List<CursorEntity> cursorEntities = new ArrayList<>();
+            cursorEntities = LitePal.where("planId = ?", plan.getId().toString()).find(CursorEntity.class);
 
 
             // 定义保存 JSON 文件的文件夹
@@ -87,7 +91,7 @@ public class FileUtil {
 
             exportListToJson(curScaleMappingEntity, new File(outputDir, plan.getPlanName()+"_scaleClick.json"));
 
-
+            exportListToJson(cursorEntities, new File(outputDir, plan.getPlanName()+"_cursorClick.json"));
         }
 
 
@@ -153,6 +157,17 @@ public class FileUtil {
                                             keyMapping.setId(null);
                                             keyMapping.setPlanId(plan.getId());
                                             keyMapping.save();
+                                        }
+                                    }
+                                }
+                                if(keyName.getName().contains("cursorClick")){
+                                    List<CursorEntity> cursorEntities = readJsonFile(keyName, new TypeToken<ArrayList<CursorEntity>>(){}.getType());
+                                    if(cursorEntities != null && !cursorEntities.isEmpty()){
+                                        for(CursorEntity cursor : cursorEntities){
+                                            cursor.assignBaseObjId(0);
+                                            cursor.setId(null);
+                                            cursor.setPlanId(plan.getId());
+                                            cursor.save();
                                         }
                                     }
                                 }
