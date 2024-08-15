@@ -19,6 +19,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.fde.keyassist.R;
+import com.fde.keyassist.entity.CursorEntity;
 import com.fde.keyassist.entity.DirectMappingEntity;
 import com.fde.keyassist.entity.DoubleClickMappingEntity;
 import com.fde.keyassist.entity.KeyMappingEntity;
@@ -210,6 +211,19 @@ public class ApplyDialog {
 
         }
         return curKeyMappingEntity;
+    }
+
+    public Boolean applyCursor(){
+        List<CursorEntity> cursorEntities = new ArrayList<>();
+        List<Plan> plans = LitePal.where("planName = ?",planName).find(Plan.class);
+        if(plans != null && plans.size() >=1){
+            Plan plan = plans.get(0);
+            cursorEntities = LitePal.where("planId = ?", plan.getId().toString()).find(CursorEntity.class);
+        }
+        if(cursorEntities != null && !cursorEntities.isEmpty()){
+            return cursorEntities.get(0).getCursorSwitch();
+        }
+        return false;
     }
 
 
