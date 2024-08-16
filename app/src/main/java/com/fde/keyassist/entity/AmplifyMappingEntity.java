@@ -4,7 +4,10 @@ package com.fde.keyassist.entity;
 import org.litepal.annotation.Column;
 import org.litepal.crud.LitePalSupport;
 
-public class ScaleMappingEntity extends LitePalSupport {
+
+// 放大
+
+public class AmplifyMappingEntity extends LitePalSupport {
     private Integer id;
 
     private Integer x; //坐标x
@@ -99,7 +102,7 @@ public class ScaleMappingEntity extends LitePalSupport {
         this.planId = planId;
     }
 
-    public ScaleMappingEntity(Integer x, Integer y, Integer keycode, String keyValue, Boolean combination, Integer eventType, Integer planId, Integer combinationKeyCode) {
+    public AmplifyMappingEntity(Integer x, Integer y, Integer keycode, String keyValue, Boolean combination, Integer eventType, Integer planId, Integer combinationKeyCode) {
         this.x = x;
         this.y = y;
         this.keycode = keycode;
@@ -110,6 +113,6 @@ public class ScaleMappingEntity extends LitePalSupport {
         this.combinationKeyCode = combinationKeyCode;
     }
 
-    public ScaleMappingEntity() {
+    public AmplifyMappingEntity() {
     }
 }
