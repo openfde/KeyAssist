@@ -19,7 +19,7 @@
 			For example:
     	<version value="1" />
     -->
-    <version value="19" />
+    <version value="21" />
 
     <!--
     	Define your models in the list with mapping tag, LitePal will
@@ -38,6 +38,7 @@
         <mapping class="com.fde.keyassist.entity.DoubleClickMappingEntity"/>
         <mapping class="com.fde.keyassist.entity.ScaleMappingEntity"/>
         <mapping class="com.fde.keyassist.entity.CursorEntity"/>
+        <mapping class="com.fde.keyassist.entity.AmplifyMappingEntity"/>
     </list>
 
     <!--

@@ -3,6 +3,7 @@ package com.fde.keyassist.util;
 import android.content.Context;
 import android.os.Environment;
 
+import com.fde.keyassist.entity.AmplifyMappingEntity;
 import com.fde.keyassist.entity.CursorEntity;
 import com.fde.keyassist.entity.DirectMappingEntity;
 import com.fde.keyassist.entity.DoubleClickMappingEntity;
@@ -67,6 +68,11 @@ public class FileUtil {
             List<ScaleMappingEntity> curScaleMappingEntity = new ArrayList<>();
             curScaleMappingEntity = LitePal.where("planId = ?", plan.getId().toString()).find(ScaleMappingEntity.class);
 
+            // 获得缩放事件
+            List<AmplifyMappingEntity> amplifyMappingEntities = new ArrayList<>();
+            amplifyMappingEntities = LitePal.where("planId = ?", plan.getId().toString()).find(AmplifyMappingEntity.class);
+
+
             // 获得鼠标事件
             List<CursorEntity> cursorEntities = new ArrayList<>();
             cursorEntities = LitePal.where("planId = ?", plan.getId().toString()).find(CursorEntity.class);
@@ -92,6 +98,8 @@ public class FileUtil {
             exportListToJson(curScaleMappingEntity, new File(outputDir, plan.getPlanName()+"_scaleClick.json"));
 
             exportListToJson(cursorEntities, new File(outputDir, plan.getPlanName()+"_cursorClick.json"));
+
+            exportListToJson(amplifyMappingEntities, new File(outputDir, plan.getPlanName()+"_amplifyClick.json"));
         }
 
 
@@ -171,6 +179,17 @@ public class FileUtil {
                                         }
                                     }
                                 }
+                            if(keyName.getName().contains("amplifyClick")){
+                                List<AmplifyMappingEntity> amplifyMappingEntities = readJsonFile(keyName, new TypeToken<ArrayList<AmplifyMappingEntity>>(){}.getType());
+                                if(amplifyMappingEntities != null && !amplifyMappingEntities.isEmpty()){
+                                    for(AmplifyMappingEntity cursor : amplifyMappingEntities){
+                                        cursor.assignBaseObjId(0);
+                                        cursor.setId(null);
+                                        cursor.setPlanId(plan.getId());
+                                        cursor.save();
+                                    }
+                                }
+                            }
                             }
                         }
                     }
