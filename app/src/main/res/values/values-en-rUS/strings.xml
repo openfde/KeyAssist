@@ -1,6 +1,6 @@
 <resources>
     <string name="app_name">KeyAssist</string>
-    <string name="tap_click">单指点击</string>
+    <string name="tap_click">single tap</string>
     <string name="double_click">双指点击</string>
     <string name="swipe">滑动</string>
     <!-- TODO: Remove or change this placeholder text -->

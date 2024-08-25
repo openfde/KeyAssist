@@ -56,6 +56,7 @@ import com.fde.keyassist.util.FileUtil;
 import org.litepal.LitePal;
 
 import java.io.DataOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -133,6 +134,8 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
 
     private ImageView key_mapping_amplify;
 
+    private Button key_mapping_exit;
+
 
 
 
@@ -151,6 +154,11 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
 
         showFloatView();
         applyDialog = new ApplyDialog(Constant.planName,this);
+        // 导入预设按键
+        FileUtil.league(this);
+//        textView.setText(holder.key_mapping_plan_text.getText());
+//        Constant.planName = holder.key_mapping_plan_text.getText().toString();
+//        FloatingService.closePopupWindow();
 
     }
 
@@ -196,18 +204,7 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
         floatView.setOnKeyListener(new View.OnKeyListener() {
             @Override
             public boolean onKey(View view, int i, KeyEvent keyEvent) {
-//                if(keyEvent.getAction() == KeyEvent.ACTION_DOWN && keyEvent.getKeyCode() == KeyEvent.KEYCODE_F){
-//                    Log.d(TAG, "onKey: down:" + keyEvent);
-//                    EventUtils.ZoomController.getInstance().setCenter(new EventUtils.Pointer(900, 400)).
-//                            startZoom(keyEvent.getRepeatCount(), true);
-//                    return true;
-//                }
-//                if(keyEvent.getAction() == KeyEvent.ACTION_UP && keyEvent.getKeyCode() == KeyEvent.KEYCODE_F){
-//                    Log.d(TAG, "onKey: up:" + keyEvent);
-//                    EventUtils.ZoomController.getInstance().stopZoom();
-//                    return true;
-//                }
-                int[] pos = getPosition(i);
+                int[] pos = getPosition(i,String.valueOf(keyEvent.getDisplayLabel()));
                 if(pos[0] != -1 && pos[1]!=-1) {
                     if (eventType == Constant.TAP_CLICK_EVENT) {
                         EventUtils.tapClick(pos[0], pos[1]);
@@ -217,7 +214,16 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
                             || eventType == Constant.DIRECTION_KEY_RIGHT) {
                         EventUtils.diretClick(floatView,keyEvent, pos[0], pos[1], eventType);
                     }else if (eventType == Constant.DOUBLE_CLICK_EVENT){
-                        EventUtils.doubleClick(pos[0], pos[1],curCount);
+//                        EventUtils.doubleClick(pos[0], pos[1],curCount);
+                        if(keyEvent.getAction() == KeyEvent.ACTION_DOWN){
+                            EventUtils.ClickController.getInstance()
+                                    .setClickPosition(pos[0], pos[1]) // 设置点击位置 (x, y)
+                                    .startClick(); // 开始持续点击
+                        }
+                        if(keyEvent.getAction() == KeyEvent.ACTION_UP){
+                            EventUtils.ClickController.getInstance().stopClick();
+                        }
+
                     }else if(eventType == Constant.SCALE){
                         if(keyEvent.getAction() == KeyEvent.ACTION_DOWN){
                             Log.d(TAG, "onKey: down:" + keyEvent);
@@ -276,6 +282,8 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
         key_mapping_plan_linear.setOnClickListener(this);
         key_mapping_plan_text = mainView.findViewById(R.id.key_mapping_plan_text);
         key_mapping_plan_text.setText(Constant.planName);
+        key_mapping_plan_text.setText("王者荣耀");
+        Constant.planName = key_mapping_plan_text.getText().toString();
         key_mapping_spinner_down = mainView.findViewById(R.id.key_mapping_spinner_down);
 
         key_mapping_double_click = mainView.findViewById(R.id.key_mapping_double_click);
@@ -289,6 +297,9 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
 
         key_mapping_amplify = mainView.findViewById(R.id.key_mapping_amplify);
         key_mapping_amplify.setOnClickListener(this);
+
+        key_mapping_exit = mainView.findViewById(R.id.key_mapping_exit);
+        key_mapping_exit.setOnClickListener(this);
 
         isMainWindow = true;
 
@@ -387,14 +398,14 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
 
     }
 
-    public int[] getPosition(int keycode){
+    public int[] getPosition(int keycode,String keyValue){
         int x = -1;
         int y = -1;
         if(keyMappingEntities != null && !keyMappingEntities.isEmpty()){
             Iterator iterator = keyMappingEntities.iterator();
             while(iterator.hasNext()){
                 KeyMappingEntity keyMapping = (KeyMappingEntity) iterator.next();
-                if(keyMapping.getKeycode() != null && keyMapping.getKeycode() == keycode){
+                if(keyMapping.getKeycode() != null && keyMapping.getKeyValue().equals(keyValue)){
                     x = keyMapping.getX();
                     y = keyMapping.getY();
                     eventType = Constant.TAP_CLICK_EVENT;
@@ -408,7 +419,7 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
             Iterator iterator = doubleClickMappingEntities.iterator();
             while(iterator.hasNext()){
                 DoubleClickMappingEntity keyMapping = (DoubleClickMappingEntity) iterator.next();
-                if(keyMapping.getKeycode() != null && keyMapping.getKeycode() == keycode){
+                if(keyMapping.getKeycode() != null && keyMapping.getKeyValue().equals(keyValue)){
                     x = keyMapping.getX();
                     y = keyMapping.getY();
                     eventType = Constant.DOUBLE_CLICK_EVENT;
@@ -423,22 +434,22 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
             Iterator iterator = directMappingEntities.iterator();
             while(iterator.hasNext()){
                 DirectMappingEntity directMapping = (DirectMappingEntity) iterator.next();
-                if(directMapping.getUpKeycode() != null && directMapping.getUpKeycode() == keycode){
+                if(directMapping.getUpKeycode() != null && directMapping.getUpKeyValue().equals(keyValue)){
                     x = directMapping.getX();
                     y = directMapping.getY();
                     eventType = Constant.DIRECTION_KEY_UP;
                     return new int[]{x,y};
-                }else if(directMapping.getDownKeycode() != null &&directMapping.getDownKeycode() == keycode){
+                }else if(directMapping.getDownKeycode() != null &&directMapping.getDownKeyValue().equals(keyValue)){
                     x = directMapping.getX();
                     y = directMapping.getY();
                     eventType = Constant.DIRECTION_KEY_DOWN;
                     return new int[]{x,y};
-                }else if(directMapping.getLeftKeycode() != null && directMapping.getLeftKeycode() == keycode){
+                }else if(directMapping.getLeftKeycode() != null && directMapping.getLeftKeyValue().equals(keyValue)){
                     x = directMapping.getX();
                     y = directMapping.getY();
                     eventType = Constant.DIRECTION_KEY_LEFT;
                     return new int[]{x,y};
-                }else if(directMapping.getRightKeycode() != null && directMapping.getRightKeycode() == keycode){
+                }else if(directMapping.getRightKeycode() != null && directMapping.getRightKeyValue().equals(keyValue)){
                     x = directMapping.getX();
                     y = directMapping.getY();
                     eventType = Constant.DIRECTION_KEY_RIGHT;
@@ -452,7 +463,7 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
             Iterator iterator = scaleMappingEntities.iterator();
             while(iterator.hasNext()){
                 ScaleMappingEntity keyMapping = (ScaleMappingEntity) iterator.next();
-                if(keyMapping.getKeycode() != null && keyMapping.getKeycode() == keycode){
+                if(keyMapping.getKeycode() != null && keyMapping.getKeyValue().equals(keyValue)){
                     x = keyMapping.getX();
                     y = keyMapping.getY();
                     eventType = Constant.SCALE;
@@ -465,7 +476,7 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
             Iterator iterator = amplifyMappingEntities.iterator();
             while(iterator.hasNext()){
                 AmplifyMappingEntity keyMapping = (AmplifyMappingEntity) iterator.next();
-                if(keyMapping.getKeycode() != null && keyMapping.getKeycode() == keycode){
+                if(keyMapping.getKeycode() != null && keyMapping.getKeyValue().equals(keyValue)){
                     x = keyMapping.getX();
                     y = keyMapping.getY();
                     eventType = Constant.AMPLIFY;
@@ -503,6 +514,17 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
     @Override
     public void onClick(View view) {
          switch (view.getId()){
+             case R.id.key_mapping_exit:
+                 endListenerKey();
+                 applyDialog.cancal();
+                 isApply = false;
+                 key_mapping_apply.setText("应用");
+                 closeCursor();
+                 mainWindow.removeView(mainView);
+                 floatWindow.removeView(floatView);
+
+                 stopSelf();
+                 break;
 
              case R.id.key_mapping_open_cursor:
 //                 openCursor();
@@ -654,7 +676,7 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
                      key_mapping_cancel.setText("编辑");
                      isChange = false;
                      editAndCancal = true;
-                     key_mapping_save.setText("退出");
+                     key_mapping_save.setText("隐藏");
                  }else{
                      endListenerKey();
                      applyDialog.cancal();
@@ -680,7 +702,7 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
                          modifyDialog.showView(); //单击事件
                          setCursorBack(modifyDialog.getCursorSwitch());
                      }else{
-                         key_mapping_save.setText("退出");
+                         key_mapping_save.setText("隐藏");
                          editAndCancal = true;
                          key_mapping_cancel.setText("编辑");
                          modifyDialog.cancel();
@@ -771,5 +793,8 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
             e.printStackTrace();
         }
     }
+
+
+
 
 }

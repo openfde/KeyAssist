@@ -19,8 +19,14 @@ import com.fde.keyassist.R;
 import com.fde.keyassist.util.Constant;
 import com.genymobile.scrcpy.Device;
 
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.RejectedExecutionHandler;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 public class EventUtils {
 
@@ -51,10 +57,6 @@ public class EventUtils {
             public void run() {
                 for(int i=0;i<count;i++){
                     tapClick(x,y);
-//                    long now = SystemClock.uptimeMillis();
-//                    injectMotionEvent(InputDevice.SOURCE_TOUCHSCREEN, MotionEvent.ACTION_DOWN, now, now, x, y, 1.0f,
-//                            0);
-//                    injectMotionEvent(InputDevice.SOURCE_TOUCHSCREEN, MotionEvent.ACTION_UP, now, now, x, y, 0.0f, 0);
                 }
             }
         }).start();
@@ -62,6 +64,7 @@ public class EventUtils {
 
     // 点击事件
     public static void tapClick(int x, int y) {
+
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -73,23 +76,10 @@ public class EventUtils {
         }).start();
 
 
-        // 发送按下事件
-        // 获取屏幕的中心坐标
-        // 创建并发送MotionEvent
-
-
-
-
     }
 
     public static void diretClick(View view, KeyEvent event, int x, int y, Integer eventType){
         view.post(()-> DirectionController.getInstance().process(event, x,  y, eventType));
-//        new Thread(new Runnable() {
-//            @Override
-//            public void run() {
-//                DirectionController.getInstance().process(event, x,  y, eventType);
-//            }
-//        }).start();
     }
 
     public static void zoom(boolean zoomIn, float centerX, float centerY){
@@ -390,5 +380,70 @@ public class EventUtils {
                     '}';
         }
     }
+
+
+
+    public static class ClickController {
+        private final ExecutorService executor = Executors.newSingleThreadExecutor();
+        private final ExecutorService service = Executors.newSingleThreadExecutor();
+        private volatile boolean stopped = true;
+        private long downTime, eventTime;
+
+        private final int source = 0xd002;
+        private final int deviceId = 10;
+        private int x, y; // 点击的坐标位置
+
+        private static class SingletonHolder {
+            private static final ClickController INSTANCE = new ClickController();
+        }
+
+        public static ClickController getInstance() {
+            return SingletonHolder.INSTANCE;
+        }
+
+        public ClickController setClickPosition(int x, int y) {
+            this.x = x;
+            this.y = y;
+            return this;
+        }
+
+        public void startClick() {
+            if (!stopped) {
+                return;
+            }
+            stopped = false;
+            executor.execute(this::startClickInner);
+        }
+
+        public void stopClick() {
+            stopped = true;
+        }
+
+        private void startClickInner() {
+            while (!stopped) {
+                performClick();
+                try {
+                    Thread.sleep(10);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+            }
+            stopped = true;
+        }
+
+        private void performClick() {
+            service.execute(new Runnable() {
+                @Override
+                public void run() {
+                    long now = SystemClock.uptimeMillis();
+                    injectMotionEvent(InputDevice.SOURCE_TOUCHSCREEN, MotionEvent.ACTION_DOWN, now, now, x, y, 1.0f,
+                            0);
+                    injectMotionEvent(InputDevice.SOURCE_TOUCHSCREEN, MotionEvent.ACTION_UP, now, now, x, y, 0.0f, 0);
+                }
+            });
+
+        }
+    }
+
 
 }

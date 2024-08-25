@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:background="#1C1D2F"
     android:orientation="vertical"
     android:layout_marginTop="10dp"
@@ -11,15 +12,21 @@
         android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
-        <TextView
-            android:gravity="center_vertical"
+
+        <Button
+            android:layout_marginLeft="15dp"
+            android:id="@+id/key_mapping_apply"
+            android:gravity="center_vertical|center_horizontal"
             android:layout_gravity="center_vertical"
-            android:textSize="12sp"
-            android:layout_marginLeft="10dp"
+            android:background="@drawable/key_mapping_apply"
             android:textColor="#FFFFFF"
-            android:text="预设按键"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
+            android:text="应用"
+            android:textSize="12sp"
+            android:layout_width="45dp"
+            android:layout_height="20dp"/>
+
+
+
         <LinearLayout
             android:orientation="vertical"
             android:layout_marginRight="10dp"
@@ -52,15 +59,16 @@
         </LinearLayout>
 
         <Button
-            android:id="@+id/key_mapping_apply"
+            android:id="@+id/key_mapping_exit"
             android:gravity="center_vertical|center_horizontal"
             android:layout_gravity="center_vertical"
             android:background="@drawable/key_mapping_apply"
             android:textColor="#FFFFFF"
-            android:text="应用"
+            android:text="退出"
             android:textSize="12sp"
             android:layout_width="45dp"
             android:layout_height="20dp"/>
+
     </LinearLayout>
 
     <LinearLayout
@@ -100,9 +108,10 @@
                 android:textColor="#FFFFFF"
                 android:layout_gravity="center"
                 android:textSize="8sp"
-                android:text="普通点击"
+                android:text="@string/tap_click"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"/>
+                android:layout_height="wrap_content"
+                tools:ignore="SmallSp" />
         </LinearLayout>
 
         <LinearLayout
@@ -261,7 +270,7 @@
             android:layout_marginLeft="10dp"
             android:background="@drawable/key_mapping_cancel"
             android:layout_weight="1"
-            android:text="退出"
+            android:text="隐藏"
             android:layout_width="0dp"
             android:layout_height="30dp"/>
     </LinearLayout>
