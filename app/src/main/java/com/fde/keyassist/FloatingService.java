@@ -2,20 +2,17 @@ package com.fde.keyassist;
 
 
 
-import android.Manifest;
 import android.annotation.SuppressLint;
-import android.app.Dialog;
-import android.app.Instrumentation;
 import android.app.Service;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.graphics.PixelFormat;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
 import android.os.IBinder;
+import android.os.SystemClock;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Gravity;
@@ -35,8 +32,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -56,16 +51,17 @@ import com.fde.keyassist.util.FileUtil;
 import org.litepal.LitePal;
 
 import java.io.DataOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 
 public class FloatingService extends Service implements View.OnClickListener,AdapterView.OnItemSelectedListener{
 
-    private static final String TAG = "FlatingService";
+    private static final String TAG = "FloatingService";
     private boolean isMainWindow = false; // 是否显示了主界面
     private View mainView;
     private WindowManager.LayoutParams mainParams;
@@ -85,7 +81,7 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
 
     private List<KeyMappingEntity> keyMappingEntities;
 
-    private Integer eventType;
+    private Integer mEventTyper;
 
     private List<DirectMappingEntity> directMappingEntities;
 
@@ -135,9 +131,7 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
     private ImageView key_mapping_amplify;
 
     private Button key_mapping_exit;
-
-
-
+    ExecutorService singleTaskExecutor = Executors.newSingleThreadExecutor();
 
 
     @Nullable
@@ -191,27 +185,31 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
         floatWindow.updateViewLayout(floatView,floatParams);
     }
 
-
+    private void singleTap(int x, int y) {
+        singleTaskExecutor.execute(()->{
+            long now = SystemClock.uptimeMillis();
+            EventUtils.injectMotionEvent(InputDevice.SOURCE_TOUCHSCREEN, MotionEvent.ACTION_DOWN, now, now, x, y, 1.0f, 0);
+            EventUtils.injectMotionEvent(InputDevice.SOURCE_TOUCHSCREEN, MotionEvent.ACTION_UP, now, now, x, y, 0.0f, 0);
+        });
+    }
 
     public void onkey(){
         floatView.setFocusableInTouchMode(true);
-        // 鼠标监听事件
-
-        // 按键事件
         floatView.setOnKeyListener(new View.OnKeyListener() {
             @Override
             public boolean onKey(View view, int i, KeyEvent keyEvent) {
                 int[] pos = getPosition(i,String.valueOf(keyEvent.getDisplayLabel()));
                 if(pos[0] != -1 && pos[1]!=-1) {
-                    if (eventType == Constant.TAP_CLICK_EVENT) {
-                        EventUtils.tapClick(pos[0], pos[1]);
-                    } else if (eventType == Constant.DIRECTION_KEY_UP
-                            || eventType == Constant.DIRECTION_KEY_LEFT
-                            || eventType == Constant.DIRECTION_KEY_DOWN
-                            || eventType == Constant.DIRECTION_KEY_RIGHT) {
-                        EventUtils.diretClick(floatView,keyEvent, pos[0], pos[1], eventType);
-                    }else if (eventType == Constant.DOUBLE_CLICK_EVENT){
-//                        EventUtils.doubleClick(pos[0], pos[1],curCount);
+                    Log.d(TAG, "onKey():  eventType :" + EventUtils.eventString(mEventTyper) + ", keyEvent :" + keyEvent + "");
+                    if (mEventTyper == Constant.TAP_CLICK_EVENT && keyEvent.getAction() == KeyEvent.ACTION_DOWN) {
+                        singleTap(pos[0], pos[1]);
+                    } else if (mEventTyper == Constant.DIRECTION_KEY_UP
+                            || mEventTyper == Constant.DIRECTION_KEY_LEFT
+                            || mEventTyper == Constant.DIRECTION_KEY_DOWN
+                            || mEventTyper == Constant.DIRECTION_KEY_RIGHT) {
+//                        EventUtils.DirectionController.getInstance().process(keyEvent, pos[0], pos[1], mEventTyper);
+                        EventUtils.diretClick(floatView,keyEvent, pos[0], pos[1], mEventTyper);
+                    }else if (mEventTyper == Constant.DOUBLE_CLICK_EVENT){
                         if(keyEvent.getAction() == KeyEvent.ACTION_DOWN){
                             EventUtils.ClickController.getInstance()
                                     .setClickPosition(pos[0], pos[1]) // 设置点击位置 (x, y)
@@ -220,28 +218,23 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
                         if(keyEvent.getAction() == KeyEvent.ACTION_UP){
                             EventUtils.ClickController.getInstance().stopClick();
                         }
-
-                    }else if(eventType == Constant.SCALE){
+                    }else if(mEventTyper == Constant.SCALE){
                         if(keyEvent.getAction() == KeyEvent.ACTION_DOWN){
-                            Log.d(TAG, "onKey: down:" + keyEvent);
                             EventUtils.ZoomController.getInstance().setCenter(new EventUtils.Pointer(pos[0], pos[1])).
                                     startZoom(keyEvent.getRepeatCount(), true);
                             return true;
                         }
                         if(keyEvent.getAction() == KeyEvent.ACTION_UP){
-                            Log.d(TAG, "onKey: up:" + keyEvent);
                             EventUtils.ZoomController.getInstance().stopZoom();
                             return true;
                         }
-                    }else if(eventType == Constant.AMPLIFY){
+                    }else if(mEventTyper == Constant.AMPLIFY){
                         if(keyEvent.getAction() == KeyEvent.ACTION_DOWN){
-                            Log.d(TAG, "onKey: down:" + keyEvent);
                             EventUtils.ZoomController.getInstance().setCenter(new EventUtils.Pointer(pos[0], pos[1])).
                                     startZoom(keyEvent.getRepeatCount(), false);
                             return true;
                         }
                         if(keyEvent.getAction() == KeyEvent.ACTION_UP){
-                            Log.d(TAG, "onKey: up:" + keyEvent);
                             EventUtils.ZoomController.getInstance().stopZoom();
                             return true;
                         }
@@ -261,7 +254,7 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
         }
         mainView = LayoutInflater.from(this).inflate(R.layout.key_mapping,null,false);
         mainParams = createLayoutParams();
-        mainWindow = createWindow(300, 450, mainView, mainParams);
+        mainWindow = createWindow(400, 450, mainView, mainParams);
         dragView(mainView,mainWindow,mainParams,"");
 //        Button key_mapping_click = mainView.findViewById(R.id.key_mapping_tap_click);
 //        key_mapping_save = mainView.findViewById(R.id.key_mapping_save);
@@ -405,7 +398,7 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
                 if(keyMapping.getKeycode() != null && keyMapping.getKeyValue().equals(keyValue)){
                     x = keyMapping.getX();
                     y = keyMapping.getY();
-                    eventType = Constant.TAP_CLICK_EVENT;
+                    mEventTyper = Constant.TAP_CLICK_EVENT;
                     return new int[]{x,y};
                 }
             }
@@ -419,7 +412,7 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
                 if(keyMapping.getKeycode() != null && keyMapping.getKeyValue().equals(keyValue)){
                     x = keyMapping.getX();
                     y = keyMapping.getY();
-                    eventType = Constant.DOUBLE_CLICK_EVENT;
+                    mEventTyper = Constant.DOUBLE_CLICK_EVENT;
                     curCount = keyMapping.getCount();
                     return new int[]{x,y};
                 }
@@ -434,22 +427,22 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
                 if(directMapping.getUpKeycode() != null && directMapping.getUpKeyValue().equals(keyValue)){
                     x = directMapping.getX();
                     y = directMapping.getY();
-                    eventType = Constant.DIRECTION_KEY_UP;
+                    mEventTyper = Constant.DIRECTION_KEY_UP;
                     return new int[]{x,y};
                 }else if(directMapping.getDownKeycode() != null &&directMapping.getDownKeyValue().equals(keyValue)){
                     x = directMapping.getX();
                     y = directMapping.getY();
-                    eventType = Constant.DIRECTION_KEY_DOWN;
+                    mEventTyper = Constant.DIRECTION_KEY_DOWN;
                     return new int[]{x,y};
                 }else if(directMapping.getLeftKeycode() != null && directMapping.getLeftKeyValue().equals(keyValue)){
                     x = directMapping.getX();
                     y = directMapping.getY();
-                    eventType = Constant.DIRECTION_KEY_LEFT;
+                    mEventTyper = Constant.DIRECTION_KEY_LEFT;
                     return new int[]{x,y};
                 }else if(directMapping.getRightKeycode() != null && directMapping.getRightKeyValue().equals(keyValue)){
                     x = directMapping.getX();
                     y = directMapping.getY();
-                    eventType = Constant.DIRECTION_KEY_RIGHT;
+                    mEventTyper = Constant.DIRECTION_KEY_RIGHT;
                     return new int[]{x,y};
                 }
             }
@@ -463,7 +456,7 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
                 if(keyMapping.getKeycode() != null && keyMapping.getKeyValue().equals(keyValue)){
                     x = keyMapping.getX();
                     y = keyMapping.getY();
-                    eventType = Constant.SCALE;
+                    mEventTyper = Constant.SCALE;
                     return new int[]{x,y};
                 }
             }
@@ -476,7 +469,7 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
                 if(keyMapping.getKeycode() != null && keyMapping.getKeyValue().equals(keyValue)){
                     x = keyMapping.getX();
                     y = keyMapping.getY();
-                    eventType = Constant.AMPLIFY;
+                    mEventTyper = Constant.AMPLIFY;
                     return new int[]{x,y};
                 }
             }

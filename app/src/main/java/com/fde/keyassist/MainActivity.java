@@ -48,8 +48,7 @@ public class MainActivity extends Activity{
         Intent intent = new Intent(MainActivity.this,FloatingService.class);
         startService(intent);
         moveTaskToBack(true);
-
-
+        getWindow().getDecorView().postDelayed(this::finish, 0);
     }
 
 
