@@ -20,7 +20,7 @@
             android:layout_gravity="center_vertical"
             android:background="@drawable/key_mapping_apply"
             android:textColor="#FFFFFF"
-            android:text="应用"
+            android:text="@string/apply"
             android:textSize="12sp"
             android:layout_width="45dp"
             android:layout_height="20dp"/>
@@ -45,7 +45,6 @@
                     android:id="@+id/key_mapping_plan_text"
                     android:textColor="#FFFFFF"
                     android:textSize="12sp"
-                    android:text="默认方案"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"/>
                 <ImageView
@@ -64,7 +63,7 @@
             android:layout_gravity="center_vertical"
             android:background="@drawable/key_mapping_apply"
             android:textColor="#FFFFFF"
-            android:text="退出"
+            android:text="@string/exit"
             android:textSize="12sp"
             android:layout_width="45dp"
             android:layout_height="20dp"/>
@@ -79,7 +78,7 @@
             android:textColor="#FFFFFF"
             android:layout_marginLeft="10dp"
             android:layout_marginTop="5dp"
-            android:text="点击按键添加到对应位置:"
+            android:text="@string/hint"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"/>
     </LinearLayout>
@@ -132,7 +131,7 @@
                 android:textColor="#FFFFFF"
                 android:layout_gravity="center"
                 android:textSize="8sp"
-                android:text="十字键"
+                android:text="@string/direct_key"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"/>
         </LinearLayout>
@@ -155,7 +154,7 @@
                 android:textColor="#FFFFFF"
                 android:layout_gravity="center"
                 android:textSize="8sp"
-                android:text="连击"
+                android:text="@string/double_click"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"/>
         </LinearLayout>
@@ -178,7 +177,7 @@
                 android:textColor="#FFFFFF"
                 android:layout_gravity="center"
                 android:textSize="8sp"
-                android:text="缩小"
+                android:text="@string/zoom_in"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"/>
         </LinearLayout>
@@ -212,7 +211,7 @@
                 android:textColor="#FFFFFF"
                 android:layout_gravity="center"
                 android:textSize="8sp"
-                android:text="放大"
+                android:text="@string/zoom_out"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"/>
         </LinearLayout>
@@ -235,7 +234,7 @@
                 android:textColor="#FFFFFF"
                 android:layout_gravity="center"
                 android:textSize="8sp"
-                android:text="打开鼠标"
+                android:text="@string/enable_mouse"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"/>
         </LinearLayout>
@@ -262,7 +261,7 @@
             android:id="@+id/key_mapping_cancel"
             android:background="@drawable/key_mapping_cancel"
             android:layout_weight="1"
-            android:text="编辑"
+            android:text="@string/edit"
             android:layout_width="0dp"
             android:layout_height="30dp"/>
         <Button
@@ -270,7 +269,7 @@
             android:layout_marginLeft="10dp"
             android:background="@drawable/key_mapping_cancel"
             android:layout_weight="1"
-            android:text="隐藏"
+            android:text="@string/hide"
             android:layout_width="0dp"
             android:layout_height="30dp"/>
     </LinearLayout>
