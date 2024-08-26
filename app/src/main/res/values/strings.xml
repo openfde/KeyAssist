@@ -1,8 +1,25 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="app_name">KeyAssist</string>
-    <string name="tap_click">单指点击</string>
-    <string name="double_click">双指点击</string>
-    <string name="swipe">滑动</string>
+    <string name="tap_click">single tap</string>
+    <string name="double_click">Continuous tapping</string>
+    <string name="swipe">swipe</string>
+    <string name="direct_key">D-pad</string>
+    <string name="zoom_out">zoom out</string>
+    <string name="zoom_in">zoom in</string>
+    <string name="enable_mouse">enable mouse</string>
+    <string name="edit">edit</string>
+    <string name="hide">hide</string>
+    <string name="hint">Click the button to add to the corresponding position</string>
+    <string name="apply">apply</string>
+    <string name="exit">exit</string>
+    <string name="cancel" tools:ignore="ButtonCase">cancel</string>
+    <string name="save">save</string>
+    <string name="direct_hint">Please enter the key</string>
+    <string name="tap_hint">Please enter the key</string>
+    <string name="scale_hint">Please enter the key</string>
+    <string name="double_hint">Please enter the key</string>
+
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+
 </resources>

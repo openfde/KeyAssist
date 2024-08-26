@@ -21,6 +21,8 @@ import com.fde.keyassist.fragment.UserProfileFragment;
 
 import org.litepal.LitePal;
 
+
+
 public class MainActivity extends Activity{
 
     private static final String TAG = "MainActivity";
@@ -30,6 +32,7 @@ public class MainActivity extends Activity{
     public void init(){
 //        LitePal.initialize(this); // 初始化数据库
         SQLiteDatabase db = LitePal.getDatabase();
+
     }
 
 

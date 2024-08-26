@@ -156,9 +156,6 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
         applyDialog = new ApplyDialog(Constant.planName,this);
         // 导入预设按键
         FileUtil.league(this);
-//        textView.setText(holder.key_mapping_plan_text.getText());
-//        Constant.planName = holder.key_mapping_plan_text.getText().toString();
-//        FloatingService.closePopupWindow();
 
     }
 
@@ -306,7 +303,7 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
 
 
         if(isApply){
-            key_mapping_apply.setText("取消");
+            key_mapping_apply.setText(getString(R.string.cancel));
         }
     }
 
@@ -518,7 +515,8 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
                  endListenerKey();
                  applyDialog.cancal();
                  isApply = false;
-                 key_mapping_apply.setText("应用");
+
+                 key_mapping_apply.setText(getString(R.string.apply));
                  closeCursor();
                  mainWindow.removeView(mainView);
                  floatWindow.removeView(floatView);
@@ -656,14 +654,14 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
                      }
                      isApply = true;
                      isMainWindow = false;
-                     key_mapping_apply.setText("取消");
+                     key_mapping_apply.setText(getString(R.string.cancel));
                      mainWindow.removeView(mainView);
                  }else{
                      if(applyDialog!=null) {
                          endListenerKey();
                          applyDialog.cancal();
                          isApply = false;
-                         key_mapping_apply.setText("应用");
+                         key_mapping_apply.setText(getString(R.string.apply));
                          closeCursor();
                      }
                  }
@@ -673,15 +671,15 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
                  setCursorBack(false);
                  if(!editAndCancal) {
                      modifyDialog.save();
-                     key_mapping_cancel.setText("编辑");
+                     key_mapping_cancel.setText(getString(R.string.edit));
                      isChange = false;
                      editAndCancal = true;
-                     key_mapping_save.setText("隐藏");
+                     key_mapping_save.setText(getString(R.string.hide));
                  }else{
                      endListenerKey();
-                     applyDialog.cancal();
-                     isApply = false;
-                     key_mapping_apply.setText("应用");
+//                     applyDialog.cancal();
+//                     isApply = false;
+//                     key_mapping_apply.setText(getString(R.string.apply));
                      isMainWindow = false;
                      mainWindow.removeView(mainView);
                  }
@@ -691,20 +689,20 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
                  setCursorBack(false);
                  // 编辑
                      if(editAndCancal){
-                         key_mapping_save.setText("保存");
+                         key_mapping_save.setText(getString(R.string.save));
                          applyDialog.cancal();
                          isApply = false;
                          editAndCancal = false;
-                         key_mapping_apply.setText("应用");
+                         key_mapping_apply.setText(getString(R.string.apply));
                          endListenerKey();
-                         key_mapping_cancel.setText("取消");
+                         key_mapping_cancel.setText(getString(R.string.cancel));
                          startModify(Constant.planName);
                          modifyDialog.showView(); //单击事件
                          setCursorBack(modifyDialog.getCursorSwitch());
                      }else{
-                         key_mapping_save.setText("隐藏");
+                         key_mapping_save.setText(getString(R.string.hide));
                          editAndCancal = true;
-                         key_mapping_cancel.setText("编辑");
+                         key_mapping_cancel.setText(getString(R.string.edit));
                          modifyDialog.cancel();
                          isChange = false;
                      }
