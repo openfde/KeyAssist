@@ -136,7 +136,9 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
 
     private Button key_mapping_exit;
 
-
+    private Boolean applyClick = true; // 是否可点击
+    private Boolean editClick = true; // 编辑可点击
+    private Boolean exitClick = true; // 退出可点击
 
 
 
@@ -304,6 +306,13 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
 
         if(isApply){
             key_mapping_apply.setText(getString(R.string.cancel));
+        }
+
+        if(!editClick){
+            key_mapping_cancel.setBackgroundResource(R.drawable.key_mapping_cancel_no_click);
+        }
+        if(!exitClick){
+            key_mapping_exit.setTextColor(Color.parseColor("#A9A9A9"));
         }
     }
 
@@ -512,6 +521,9 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
     public void onClick(View view) {
          switch (view.getId()){
              case R.id.key_mapping_exit:
+                 if(!exitClick){
+                     break;
+                 }
                  endListenerKey();
                  applyDialog.cancal();
                  isApply = false;
@@ -636,6 +648,12 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
                  break;
              case R.id.key_mapping_apply:
                  if(!isApply && editAndCancal){
+                     // 退出和编辑不可使用
+                     exitClick = false;
+                     editClick = false;
+                     key_mapping_cancel.setBackgroundResource(R.drawable.key_mapping_cancel_no_click);
+                     key_mapping_exit.setBackgroundResource(R.drawable.key_mapping_apply_no_click);
+
                      startListenerKey();
                      if(applyDialog != null){
                          applyDialog.cancal();
@@ -658,6 +676,14 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
                      mainWindow.removeView(mainView);
                  }else{
                      if(applyDialog!=null) {
+                         if(!applyClick){
+                             break;
+                         }
+                         key_mapping_cancel.setBackgroundResource(R.drawable.key_mapping_cancel);
+                         key_mapping_exit.setTextColor(Color.parseColor("#FFFFFF"));
+                         exitClick = true;
+                         editClick = true;
+
                          endListenerKey();
                          applyDialog.cancal();
                          isApply = false;
@@ -670,12 +696,19 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
                  setButtonBack(null);
                  setCursorBack(false);
                  if(!editAndCancal) {
+                     applyClick = true;
+                     exitClick = true;
+                     key_mapping_apply.setTextColor(Color.parseColor("#FFFFFF"));
+                     key_mapping_exit.setTextColor(Color.parseColor("#FFFFFF"));
+
                      modifyDialog.save();
                      key_mapping_cancel.setText(getString(R.string.edit));
                      isChange = false;
                      editAndCancal = true;
                      key_mapping_save.setText(getString(R.string.hide));
                  }else{
+
+
                      endListenerKey();
 //                     applyDialog.cancal();
 //                     isApply = false;
@@ -685,10 +718,19 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
                  }
                  break;
              case R.id.key_mapping_cancel:
+                 if(!editClick){
+                     break;
+                 }
                  setButtonBack(null);
                  setCursorBack(false);
                  // 编辑
                      if(editAndCancal){
+                         applyClick = false;
+                         exitClick = false;
+                         key_mapping_apply.setTextColor(Color.parseColor("#A9A9A9"));
+                         key_mapping_exit.setTextColor(Color.parseColor("#A9A9A9"));
+
+
                          key_mapping_save.setText(getString(R.string.save));
                          applyDialog.cancal();
                          isApply = false;
@@ -700,6 +742,11 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
                          modifyDialog.showView(); //单击事件
                          setCursorBack(modifyDialog.getCursorSwitch());
                      }else{
+                         applyClick = true;
+                         exitClick = true;
+                         key_mapping_apply.setTextColor(Color.parseColor("#FFFFFF"));
+                         key_mapping_exit.setTextColor(Color.parseColor("#FFFFFF"));
+
                          key_mapping_save.setText(getString(R.string.hide));
                          editAndCancal = true;
                          key_mapping_cancel.setText(getString(R.string.edit));

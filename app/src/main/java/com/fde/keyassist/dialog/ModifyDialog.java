@@ -465,6 +465,9 @@ public class ModifyDialog extends BaseServiceDialog implements View.OnClickListe
             keyMapping.setX(centerPostion[0]);
             keyMapping.setY(centerPostion[1]);
             TextView textView = view.findViewById(R.id.modify_dialog_tap_click_edit);
+            if(textView.getText().toString().isEmpty()){
+                continue;
+            }
             String keyValue = textView.getText().toString();
             keyMapping.setKeyValue(keyValue);
             keyMapping.setEventType(Constant.TAP_CLICK_EVENT);
@@ -501,6 +504,9 @@ public class ModifyDialog extends BaseServiceDialog implements View.OnClickListe
             keyMapping.setX(centerPostion[0]);
             keyMapping.setY(centerPostion[1]);
             TextView textView = view.findViewById(R.id.modify_dialog_scale_edit);
+            if(textView.getText().toString().isEmpty()){
+                continue;
+            }
             String keyValue = textView.getText().toString();
             keyMapping.setKeyValue(keyValue);
             keyMapping.setEventType(Constant.SCALE);
@@ -539,6 +545,9 @@ public class ModifyDialog extends BaseServiceDialog implements View.OnClickListe
             keyMapping.setX(centerPostion[0]);
             keyMapping.setY(centerPostion[1]);
             TextView textView = view.findViewById(R.id.modify_dialog_scale_edit);
+            if(textView.getText().toString().isEmpty()){
+                continue;
+            }
             String keyValue = textView.getText().toString();
             keyMapping.setKeyValue(keyValue);
             keyMapping.setEventType(Constant.AMPLIFY);
@@ -639,6 +648,9 @@ public class ModifyDialog extends BaseServiceDialog implements View.OnClickListe
             keyMapping.setX(centerPostion[0]);
             keyMapping.setY(centerPostion[1]);
             TextView textView = view.findViewById(R.id.modify_dialog_double_click_edit);
+            if(textView.getText().toString().isEmpty()){
+                continue;
+            }
             String keyValue = textView.getText().toString();
             keyMapping.setKeyValue(keyValue);
             keyMapping.setEventType(Constant.DOUBLE_CLICK_EVENT);
