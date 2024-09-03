@@ -3,16 +3,22 @@ package com.fde.keyassist;
 
 
 import android.annotation.SuppressLint;
+import android.app.ActivityManager;
+import android.app.ActivityTaskManager;
 import android.app.Service;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.graphics.PixelFormat;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
 import android.os.IBinder;
+import android.os.RemoteException;
 import android.os.SystemClock;
+import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Gravity;
@@ -150,7 +156,12 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
         applyDialog = new ApplyDialog(Constant.planName,this);
         // 导入预设按键
         FileUtil.league(this);
-
+//        ActivityTaskManager taskManager = (ActivityTaskManager)getSystemService("activity_task");
+//        ActivityManager activityManager = (ActivityManager)getSystemService(Context.ACTIVITY_SERVICE);
+//
+//        List<ActivityManager.RunningTaskInfo> runningTasks = activityManager.getRunningTasks(50);
+//        for (ActivityManager.RunningTaskInfo info: runningTasks){
+//        }
     }
 
 
