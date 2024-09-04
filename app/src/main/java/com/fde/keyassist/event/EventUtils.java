@@ -50,34 +50,44 @@ public class EventUtils {
                 2);
     }
 
+    // 连击事件
+    public static void doubleClick(int x,int y,int count){
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                for(int i=0;i<count;i++){
+                    tapClick(x,y);
+                }
+            }
+        }).start();
+    }
+
+    // 点击事件
+    public static void tapClick(int x, int y) {
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                long now = SystemClock.uptimeMillis();
+                injectMotionEvent(InputDevice.SOURCE_TOUCHSCREEN, MotionEvent.ACTION_DOWN, now, now, x, y, 1.0f,
+                        0);
+                injectMotionEvent(InputDevice.SOURCE_TOUCHSCREEN, MotionEvent.ACTION_UP, now, now, x, y, 0.0f, 0);
+            }
+        }).start();
+
+
+    }
+
     public static void diretClick(View view, KeyEvent event, int x, int y, Integer eventType){
         view.post(()-> DirectionController.getInstance().process(event, x,  y, eventType));
     }
 
-    public static String eventString(Integer eventType) {
-        switch (eventType){
-            case 1:
-                return "TAP_CLICK_EVENT";
-            case 2:
-                return "DOUBLE_CLICK_EVENT";
-            case 3:
-                return "SWIPE";
-            case 4:
-                return "DIRECTION_KEY";
-            case 5:
-                return "DIRECTION_KEY_UP";
-            case 6:
-                return "DIRECTION_KEY_DOWN";
-            case 7:
-                return "DIRECTION_KEY_LEFT";
-            case 8:
-                return "DIRECTION_KEY_RIGHT";
-            case 9:
-                return "SCALE";
-            case 10:
-                return "AMPLIFY";
-        }
-        return "UNKNOWN EVENT";
+    public static void zoom(boolean zoomIn, float centerX, float centerY){
+        zoom(zoomIn, centerX, centerY, 1f);
+    }
+
+    private static void zoom(boolean zoomIn, float centerX, float centerY, float rate) {
+
     }
 
 
