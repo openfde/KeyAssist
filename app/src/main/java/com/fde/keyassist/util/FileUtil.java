@@ -1,6 +1,7 @@
 package com.fde.keyassist.util;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.res.AssetManager;
 import android.os.Environment;
 import android.util.Log;
@@ -329,7 +330,7 @@ public class FileUtil {
         }
         try{
             AssetManager assetManager = context.getAssets();
-            InputStream inputStream = assetManager.open("HonorofKings.json");
+            InputStream inputStream = assetManager.open("Honor.json");
             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
             JsonElement jsonElement = JsonParser.parseReader(bufferedReader);
             Plan plan = new Plan();
@@ -344,6 +345,11 @@ public class FileUtil {
                 jsonToScale(jsonArray.get(4).getAsJsonArray(),plan.getId());
                 jsonToAmplify(jsonArray.get(5).getAsJsonArray(),plan.getId());
             }
+            SharedPreferences.Editor data = context.getSharedPreferences("data", Context.MODE_PRIVATE).edit();
+            String packageName = "com.tencent.tmgp.sgame_.SGameActivity.xml";
+            String bounds = "338 141 1449 871";
+            data.putString(packageName+"**"+plan.getPlanName(),bounds);
+            data.apply();
         }catch (Exception e){
 
         }

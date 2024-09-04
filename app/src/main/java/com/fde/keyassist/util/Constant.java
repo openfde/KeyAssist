@@ -11,5 +11,5 @@ public class Constant {
     public final static Integer DIRECTION_KEY_RIGHT = 8;
     public static final Integer SCALE = 9;
     public static final Integer AMPLIFY = 10;
-    public static String planName = "默认方案";
+    public static String planName = "王者荣耀";
 }

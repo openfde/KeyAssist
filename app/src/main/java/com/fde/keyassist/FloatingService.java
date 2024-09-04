@@ -4,20 +4,28 @@ package com.fde.keyassist;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
-import android.app.Dialog;
-import android.app.Instrumentation;
+import android.app.ActivityManager;
+import android.app.ActivityTaskManager;
+
 import android.app.Service;
+import android.app.TaskInfo;
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.graphics.PixelFormat;
+import android.graphics.Rect;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
+import android.os.Environment;
 import android.os.IBinder;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.Display;
 import android.view.Gravity;
 import android.view.InputDevice;
 import android.view.KeyEvent;
@@ -35,8 +43,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -54,13 +60,25 @@ import com.fde.keyassist.util.Constant;
 import com.fde.keyassist.util.FileUtil;
 
 import org.litepal.LitePal;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
+
+import java.lang.reflect.Field;
 import java.util.ArrayList;
+
 import java.util.Iterator;
 import java.util.List;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+
 
 
 public class FloatingService extends Service implements View.OnClickListener,AdapterView.OnItemSelectedListener{
@@ -155,9 +173,14 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
         SQLiteDatabase db = LitePal.getDatabase();
 
         showFloatView();
-        applyDialog = new ApplyDialog(Constant.planName,this);
+        applyDialog = new ApplyDialog(Constant.planName, this);
         // 导入预设按键
         FileUtil.league(this);
+
+//        saveTask();
+
+//        resizeTask();
+
 
     }
 
@@ -281,7 +304,7 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
         key_mapping_plan_linear.setOnClickListener(this);
         key_mapping_plan_text = mainView.findViewById(R.id.key_mapping_plan_text);
         key_mapping_plan_text.setText(Constant.planName);
-        key_mapping_plan_text.setText("王者荣耀");
+//        key_mapping_plan_text.setText("王者荣耀");
         Constant.planName = key_mapping_plan_text.getText().toString();
         key_mapping_spinner_down = mainView.findViewById(R.id.key_mapping_spinner_down);
 
@@ -382,7 +405,6 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
                             isMoving = true;
                             params.x += moveX;
                             params.y += moveY;
-                            //更新View的位置
                             windowManager.updateViewLayout(view, params);
                             x = nowX;
                             y = nowY;
@@ -395,6 +417,10 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
                                 showKeyMapping();
                             }
                             return true;
+                        }else{
+                            //更新View的位置
+                            Adsorption(params);
+                            windowManager.updateViewLayout(view, params);
                         }
                         break;
                 }
@@ -648,6 +674,7 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
                  break;
              case R.id.key_mapping_apply:
                  if(!isApply && editAndCancal){
+                     resizeTask();
                      // 退出和编辑不可使用
                      exitClick = false;
                      editClick = false;
@@ -706,6 +733,8 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
                      isChange = false;
                      editAndCancal = true;
                      key_mapping_save.setText(getString(R.string.hide));
+                     saveTask();
+
                  }else{
 
 
@@ -840,6 +869,122 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
     }
 
 
+    // 吸附
+    public void Adsorption(WindowManager.LayoutParams params){
+        int width = getScreenWidth(this);
+        int heigh = getScreenHeight(this);
+        if(params.x + 200 > width){
+            params.x = width;
+        }
+    }
 
+
+    public static int getScreenWidth(Context context) {
+        WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+        Display display = wm.getDefaultDisplay();
+        // 注意：getDisplayMetrics().widthPixels 和 getDisplayMetrics().heightPixels
+        // 在Android 3.0以上版本中，当屏幕方向改变时，这两个值会互换。
+        // 因此，如果你需要固定的宽度和高度（不考虑屏幕方向），你可能需要做一些额外的检查。
+        // 这里我们直接获取widthPixels作为屏幕宽度（在横向模式下可能不是）
+        return display.getWidth(); // 在API 30及以上，建议使用getDisplay().getSize(Point outSize)
+    }
+
+    public static int getScreenHeight(Context context) {
+        WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+        Display display = wm.getDefaultDisplay();
+        return display.getHeight(); // 同上，注意高度和宽度的互换问题
+    }
+
+    // 得到排名第一的活动
+    public ActivityManager.RunningTaskInfo getStartInfo(){
+
+        ActivityManager activityManager = (ActivityManager)getSystemService(Context.ACTIVITY_SERVICE);
+        ActivityManager.RunningTaskInfo start = null;
+        List<ActivityManager.RunningTaskInfo> runningTasks = activityManager.getRunningTasks(50);
+        for (ActivityManager.RunningTaskInfo info: runningTasks){
+            start = info;
+            break;
+        }
+        return start;
+    }
+
+    // 根据活动名获得xml文件
+    public File listXml(String packageName){
+        File dataDirectory = Environment.getDataDirectory();
+        File launchParams = new File(dataDirectory,"system_ce/0/launch_params");
+        File[] files = launchParams.listFiles();
+        for(File file : files){
+            if(file.getName().contains(packageName)) {
+               return file;
+            }
+        }
+        return null;
+    }
+
+    public void resizeTask(){
+        ActivityManager.RunningTaskInfo start = getStartInfo();
+        ActivityTaskManager taskManager = (ActivityTaskManager)getSystemService("activity_task");
+        SharedPreferences data = getSharedPreferences("data", Context.MODE_PRIVATE);
+        String packageName = start.topActivity.getPackageName()+ "_" + start.topActivity.getShortClassName() +".xml";
+        String bounds = data.getString(packageName+"**"+Constant.planName, "");
+        if(!bounds.isEmpty()){
+            // 1. 使用 split() 方法分割字符串
+            String[] parts = bounds.split(" ");
+            // 2. 创建一个整数数组来存储转换后的数字
+            int[] numbers = new int[parts.length];
+            // 3. 遍历字符串数组，将每个部分转换为整数
+            for (int i = 0; i < parts.length; i++) {
+                numbers[i] = Integer.parseInt(parts[i]);
+            }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                taskManager.resizeTask(start.taskId,new Rect(numbers[0],numbers[1],numbers[2],numbers[3]));
+            }
+        }
+
+
+    }
+
+    public void saveTask()  {
+        try {
+            // 得到排名第一的任务
+            ActivityManager.RunningTaskInfo start = getStartInfo();
+            String packageName = start.topActivity.getPackageName()+ "_" + start.topActivity.getShortClassName() +".xml";
+            // 获得任务名对应的xml文件
+            File file = listXml(packageName);
+            if(file != null){
+                String bounds = getBound(file);
+                SharedPreferences.Editor data = getSharedPreferences("data", Context.MODE_PRIVATE).edit();
+                data.putString(packageName+"**"+Constant.planName,bounds);
+                data.apply();
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+
+    }
+
+    // 获得文件定位位置
+    public String getBound(File file)  {
+        String bounds = "";
+        StringBuilder contentBuilder = new StringBuilder();
+        try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                contentBuilder.append(line).append("\n");
+            }
+            // 1. 创建DocumentBuilderFactory
+            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            // 2. 创建DocumentBuilder
+            DocumentBuilder builder = factory.newDocumentBuilder();
+            Document document = builder.parse(new ByteArrayInputStream(contentBuilder.toString().getBytes("UTF-8")));
+            // 4. 获取根元素
+            Element root = document.getDocumentElement();
+            // 5. 获取bounds属性值
+            bounds = root.getAttribute("bounds");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return bounds;
+    }
 
 }
