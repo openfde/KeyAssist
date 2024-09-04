@@ -190,7 +190,7 @@ public class ApplyDialog {
         }
         for (AmplifyMappingEntity entity : curKeyMappingEntity){
             if(entity.getEventType() == Constant.AMPLIFY) {
-                View view = LayoutInflater.from(context).inflate(R.layout.modify_dialog_scale, null, false);
+                View view = LayoutInflater.from(context).inflate(R.layout.modify_dialog_amplify, null, false);
                 ImageView imageView = view.findViewById(R.id.modify_dialog_scale_delete);
                 imageView.setVisibility(View.GONE);
                 TextView textView = view.findViewById(R.id.modify_dialog_scale_hint);

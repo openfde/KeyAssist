@@ -44,7 +44,21 @@ android {
     }
 }
 
+//gradle.projectsEvaluated {
+//    tasks.withType(JavaCompile) {
+//        Set<File> fileSet = options.bootstrapClasspath.getFiles()
+//        List<File> newFileList =  new ArrayList<>();
+//        newFileList.add(new File("libs/framework.jar"))
+//        newFileList.addAll(fileSet)
+//        options.bootstrapClasspath = files(
+//                newFileList.toArray()
+//        )
+//    }
+//}
+
 dependencies {
+    compileOnly files('libs/framework.jar')
+
     implementation 'org.litepal.guolindev:core:3.2.3'
     implementation 'androidx.recyclerview:recyclerview:1.2.1'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.3'

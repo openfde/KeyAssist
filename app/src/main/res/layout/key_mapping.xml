@@ -1,58 +1,57 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:background="#1C1D2F"
+    android:background="@drawable/bg_modify_main"
     android:orientation="vertical"
-    android:layout_marginTop="10dp"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
     <LinearLayout
+        android:id="@+id/key_mapping_apply_linear"
         android:layout_marginTop="10dp"
         android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
         <Button
-            android:layout_marginLeft="15dp"
+            android:layout_marginLeft="20dp"
             android:id="@+id/key_mapping_apply"
             android:gravity="center_vertical|center_horizontal"
             android:layout_gravity="center_vertical"
             android:background="@drawable/key_mapping_apply"
             android:textColor="#FFFFFF"
             android:text="@string/apply"
-            android:textSize="12sp"
-            android:layout_width="45dp"
-            android:layout_height="20dp"/>
-
-
+            android:textSize="14sp"
+            android:layout_width="65dp"
+            android:layout_height="35dp"/>
 
         <LinearLayout
             android:orientation="vertical"
-            android:layout_marginRight="10dp"
-            android:layout_marginLeft="10dp"
+            android:layout_margin="15dp"
             android:background="@drawable/key_mapping_spinner"
-            android:layout_width="160dp"
-            android:layout_height="wrap_content">
+            android:layout_width="200dp"
+            android:layout_height="35dp">
             <LinearLayout
                 android:id="@+id/key_mapping_plan_linear"
                 android:orientation="horizontal"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+                android:layout_width="wrap_content"
+                android:layout_height="35dp">
                 <TextView
-                    android:gravity="center_vertical"
-                    android:layout_marginLeft="5px"
+                    android:layout_gravity="center"
+                    android:layout_marginLeft="10dp"
                     android:id="@+id/key_mapping_plan_text"
                     android:textColor="#FFFFFF"
-                    android:textSize="12sp"
+                    android:textSize="14sp"
+                    android:gravity="center"
+                    android:text="默认"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"/>
+                    android:layout_height="35dp"/>
                 <ImageView
                     android:id="@+id/key_mapping_spinner_down"
-                    android:layout_marginLeft="85dp"
                     android:src="@drawable/key_mapping_spinner_down"
-                    android:layout_width="20dp"
-                    android:layout_height="20dp"/>
+                    android:layout_marginLeft="100dp"
+                    android:layout_width="35dp"
+                    android:layout_height="35dp"/>
             </LinearLayout>
 
         </LinearLayout>
@@ -62,33 +61,36 @@
             android:gravity="center_vertical|center_horizontal"
             android:layout_gravity="center_vertical"
             android:background="@drawable/key_mapping_apply"
+            android:layout_marginRight="20dp"
             android:textColor="#FFFFFF"
             android:text="@string/exit"
-            android:textSize="12sp"
-            android:layout_width="45dp"
-            android:layout_height="20dp"/>
+            android:textSize="14sp"
+            android:layout_width="wrap_content"
+            android:layout_height="35dp"/>
 
     </LinearLayout>
 
     <LinearLayout
+        android:id="@+id/key_mapping_tip"
+        android:layout_below="@+id/key_mapping_apply_linear"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
         <TextView
-            android:textSize="12sp"
+            android:textSize="14sp"
             android:textColor="#FFFFFF"
-            android:layout_marginLeft="10dp"
-            android:layout_marginTop="5dp"
+            android:layout_marginHorizontal="20dp"
             android:text="@string/hint"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"/>
     </LinearLayout>
 
     <LinearLayout
-        android:layout_weight="1"
-        android:layout_marginTop="10dp"
+        android:id="@+id/key_mapping_control_1"
+        android:layout_below="@+id/key_mapping_tip"
+        android:layout_marginTop="20dp"
         android:orientation="horizontal"
         android:layout_width="match_parent"
-        android:layout_height="0dp">
+        android:layout_height="wrap_content">
         <LinearLayout
             android:orientation="vertical"
             android:layout_weight="1"
@@ -106,7 +108,7 @@
                 android:gravity="center_horizontal"
                 android:textColor="#FFFFFF"
                 android:layout_gravity="center"
-                android:textSize="8sp"
+                android:textSize="@dimen/control_button_text_size"
                 android:text="@string/tap_click"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -130,7 +132,7 @@
                 android:gravity="center_horizontal"
                 android:textColor="#FFFFFF"
                 android:layout_gravity="center"
-                android:textSize="8sp"
+                android:textSize="@dimen/control_button_text_size"
                 android:text="@string/direct_key"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"/>
@@ -153,7 +155,7 @@
                 android:gravity="center_horizontal"
                 android:textColor="#FFFFFF"
                 android:layout_gravity="center"
-                android:textSize="8sp"
+                android:textSize="@dimen/control_button_text_size"
                 android:text="@string/double_click"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"/>
@@ -176,7 +178,7 @@
                 android:gravity="center_horizontal"
                 android:textColor="#FFFFFF"
                 android:layout_gravity="center"
-                android:textSize="8sp"
+                android:textSize="@dimen/control_button_text_size"
                 android:text="@string/zoom_in"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"/>
@@ -187,17 +189,18 @@
 
 
     <LinearLayout
-        android:layout_weight="1"
-        android:layout_marginTop="10dp"
+        android:layout_marginTop="30dp"
+        android:id="@+id/key_mapping_control_2"
+        android:layout_below="@+id/key_mapping_control_1"
         android:orientation="horizontal"
         android:layout_width="match_parent"
-        android:layout_height="0dp">
+        android:layout_height="wrap_content">
 
         <LinearLayout
             android:orientation="vertical"
             android:layout_weight="1"
             android:layout_width="0dp"
-            android:layout_height="match_parent">
+            android:layout_height="wrap_content">
             <ImageView
                 android:id="@+id/key_mapping_amplify"
                 android:layout_gravity="center"
@@ -210,7 +213,7 @@
                 android:gravity="center_horizontal"
                 android:textColor="#FFFFFF"
                 android:layout_gravity="center"
-                android:textSize="8sp"
+                android:textSize="@dimen/control_button_text_size"
                 android:text="@string/zoom_out"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"/>
@@ -233,7 +236,7 @@
                 android:gravity="center_horizontal"
                 android:textColor="#FFFFFF"
                 android:layout_gravity="center"
-                android:textSize="8sp"
+                android:textSize="@dimen/control_button_text_size"
                 android:text="@string/enable_mouse"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"/>
@@ -245,15 +248,11 @@
     </LinearLayout>
 
 
-    <LinearLayout
-        android:layout_weight="3"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"/>
-
 
     <LinearLayout
+        android:layout_alignParentBottom="true"
         android:padding="10dp"
-        android:layout_marginTop="20dp"
+        android:layout_margin="10dp"
         android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
@@ -266,7 +265,7 @@
             android:layout_height="30dp"/>
         <Button
             android:id="@+id/key_mapping_save"
-            android:layout_marginLeft="10dp"
+            android:layout_marginLeft="20dp"
             android:background="@drawable/key_mapping_cancel"
             android:layout_weight="1"
             android:text="@string/hide"
@@ -274,4 +273,4 @@
             android:layout_height="30dp"/>
     </LinearLayout>
 
-</LinearLayout>
+</RelativeLayout>

@@ -175,7 +175,7 @@ public class ModifyDialog extends BaseServiceDialog implements View.OnClickListe
 
     public void createAmplify(MotionEvent event){
         // 点击事件
-        View view = LayoutInflater.from(getContext()).inflate(R.layout.modify_dialog_scale,null,false);
+        View view = LayoutInflater.from(getContext()).inflate(R.layout.modify_dialog_amplify,null,false);
 //                curText = view.findViewById(R.id.modify_dialog_tap_click_edit);
 //                curHintText = view.findViewById(R.id.modify_dialog_tap_click_hint);
         layoutParams.width = 70;
@@ -716,7 +716,7 @@ public class ModifyDialog extends BaseServiceDialog implements View.OnClickListe
             curKeyMappingEntity = LitePal.where("planId = ?", plan.getId().toString()).find(AmplifyMappingEntity.class);
         }
         for (AmplifyMappingEntity entity : curKeyMappingEntity){
-            View view = LayoutInflater.from(getContext()).inflate(R.layout.modify_dialog_scale, null, false);
+            View view = LayoutInflater.from(getContext()).inflate(R.layout.modify_dialog_amplify, null, false);
             TextView modify_dialog_tap_click_edit = view.findViewById(R.id.modify_dialog_scale_edit);
             modify_dialog_tap_click_edit.setText(entity.getKeyValue());
             scaleView.add(view);
