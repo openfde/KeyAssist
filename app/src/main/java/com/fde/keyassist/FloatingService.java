@@ -286,7 +286,7 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
         }
         mainView = LayoutInflater.from(this).inflate(R.layout.key_mapping,null,false);
         mainParams = createLayoutParams();
-        mainWindow = createWindow(300, 450, mainView, mainParams);
+        mainWindow = createWindow(350, 450, mainView, mainParams);
         dragView(mainView,mainWindow,mainParams,"");
 //        Button key_mapping_click = mainView.findViewById(R.id.key_mapping_tap_click);
 //        key_mapping_save = mainView.findViewById(R.id.key_mapping_save);
@@ -632,7 +632,8 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
                  });
 
                  recyclerView.setLayoutManager(new LinearLayoutManager(this));
-                 popupWindow = new PopupWindow(dropdownView, ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, true);
+
+                 popupWindow = new PopupWindow(dropdownView, key_mapping_plan_linear.getWidth(), ViewGroup.LayoutParams.WRAP_CONTENT, true);
                  popupWindow.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
                  popupWindow.setOutsideTouchable(true); // Dismiss the popup when touching outside
                  popupWindow.showAsDropDown(key_mapping_plan_linear,0,0,Gravity.NO_GRAVITY);
