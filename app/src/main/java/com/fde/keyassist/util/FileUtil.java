@@ -346,9 +346,9 @@ public class FileUtil {
                 jsonToAmplify(jsonArray.get(5).getAsJsonArray(),plan.getId());
             }
             SharedPreferences.Editor data = context.getSharedPreferences("data", Context.MODE_PRIVATE).edit();
-            String packageName = "com.tencent.tmgp.sgame_.SGameActivity.xml";
+            String packageName = "com.tencent.tmgp.sgame.SGameActivity";
             String bounds = "338 141 1449 871";
-            data.putString(packageName+"**"+plan.getPlanName(),bounds);
+            data.putString(packageName+plan.getPlanName(),bounds);
             data.apply();
         }catch (Exception e){
 
