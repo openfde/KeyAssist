@@ -23,6 +23,9 @@ import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
 import android.os.Environment;
 import android.os.IBinder;
+import android.os.Parcel;
+import android.os.Parcelable;
+import android.os.ParcelableParcel;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Display;
@@ -913,24 +916,46 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
     }
 
     // 根据活动名获得xml文件
-    public File listXml(String packageName){
+    public File listXml(String packageName,String className){
         File dataDirectory = Environment.getDataDirectory();
         File launchParams = new File(dataDirectory,"system_ce/0/launch_params");
         File[] files = launchParams.listFiles();
         for(File file : files){
-            if(file.getName().contains(packageName)) {
+            Log.d("filename", "listXml: "+file.getName());
+            if(file.getName().contains(packageName) && file.getName().contains(className)) {
                return file;
             }
         }
         return null;
     }
 
+    @SuppressLint("BlockedPrivateApi")
     public void resizeTask(){
         ActivityManager.RunningTaskInfo start = getStartInfo();
+        String packageName = "";
+        String className = "";
+        try {
+            // 获取 RunningTaskInfo 类的字段 realActivity
+            Field realActivityField = null;
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+                realActivityField = TaskInfo.class.getDeclaredField("realActivity");
+            }
+            realActivityField.setAccessible(true); // 绕过访问权限控制
+            if (start != null) {
+                ComponentName realActivity = (ComponentName) realActivityField.get(start);
+                if (realActivity != null) {
+                    packageName = realActivity.getPackageName();
+                    className = realActivity.getShortClassName();
+                } else {
+                    Log.d("RealActivity", "realActivity is null");
+                }
+            }
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            e.printStackTrace();
+        }
         ActivityTaskManager taskManager = (ActivityTaskManager)getSystemService("activity_task");
         SharedPreferences data = getSharedPreferences("data", Context.MODE_PRIVATE);
-        String packageName = start.topActivity.getPackageName()+ "_" + start.topActivity.getShortClassName() +".xml";
-        String bounds = data.getString(packageName+"**"+Constant.planName, "");
+        String bounds = data.getString(packageName+className+Constant.planName, "");
         if(!bounds.isEmpty()){
             // 1. 使用 split() 方法分割字符串
             String[] parts = bounds.split(" ");
@@ -947,18 +972,41 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
 
 
     }
-
+    @SuppressLint("BlockedPrivateApi")
     public void saveTask()  {
         try {
             // 得到排名第一的任务
             ActivityManager.RunningTaskInfo start = getStartInfo();
-            String packageName = start.topActivity.getPackageName()+ "_" + start.topActivity.getShortClassName() +".xml";
+            String packageName = "";
+            String className = "";
+            try {
+                // 获取 RunningTaskInfo 类的字段 realActivity
+                Field realActivityField = null;
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+                    realActivityField = TaskInfo.class.getDeclaredField("realActivity");
+                }
+                realActivityField.setAccessible(true); // 绕过访问权限控制
+                if (start != null) {
+                    ComponentName realActivity = (ComponentName) realActivityField.get(start);
+                    if (realActivity != null) {
+                        packageName = realActivity.getPackageName();
+                        className = realActivity.getShortClassName();
+                    } else {
+                        Log.d("RealActivity", "realActivity is null");
+                    }
+                }
+            } catch (NoSuchFieldException | IllegalAccessException e) {
+                e.printStackTrace();
+            }
+
+
+            // 包名加类名
             // 获得任务名对应的xml文件
-            File file = listXml(packageName);
+            File file = listXml(packageName,className);
             if(file != null){
                 String bounds = getBound(file);
                 SharedPreferences.Editor data = getSharedPreferences("data", Context.MODE_PRIVATE).edit();
-                data.putString(packageName+"**"+Constant.planName,bounds);
+                data.putString(packageName+className+Constant.planName,bounds);
                 data.apply();
             }
         }catch (Exception e){
