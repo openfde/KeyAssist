@@ -107,8 +107,8 @@ public class ApplyDialog {
             right.setText(entity.getRightKeyValue());
             ImageView delete = view.findViewById(R.id.modify_dialog_tap_click_delete);
             delete.setVisibility(View.GONE);
-            TextView hint = view.findViewById(R.id.modify_dialog_direct_click_hint);
-            hint.setVisibility(View.GONE);
+//            TextView hint = view.findViewById(R.id.modify_dialog_direct_click_hint);
+//            hint.setVisibility(View.GONE);
             params.x = entity.getX() - params.width/2;
             params.y = entity.getY() - params.height/2;
             windowManager.addView(view,params);

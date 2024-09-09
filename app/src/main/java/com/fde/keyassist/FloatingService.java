@@ -717,7 +717,6 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
                          key_mapping_exit.setTextColor(Color.parseColor("#FFFFFF"));
                          exitClick = true;
                          editClick = true;
-
                          endListenerKey();
                          applyDialog.cancal();
                          isApply = false;
@@ -743,8 +742,6 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
                      saveTask();
 
                  }else{
-
-
                      endListenerKey();
 //                     applyDialog.cancal();
 //                     isApply = false;
