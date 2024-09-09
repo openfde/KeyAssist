@@ -21,5 +21,13 @@
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="dialog_modify_hint" translatable="false">
+        1. 按键主要分为点击键，十字键，连击键，放大，缩小，开启鼠标 \n
+        2. 点击不同的按键，可以实现按键切换，当按键切换后，便可以点击屏幕上任意一点，进行映射 \n
+        3. 点击enable mouse可以开启鼠标，当开启鼠标后，可以实现鼠标和按键同时运行 \n
+        4. 可以点击每个按钮上的x，删除按键 \n
+        5. 点击取消不会保存按键 \n
+        6. 点击保存会保存所有按键到对应的方案中 \n
+    </string>
 
 </resources>

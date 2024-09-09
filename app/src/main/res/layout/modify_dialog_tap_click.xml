@@ -29,7 +29,7 @@
         android:layout_below="@+id/modify_dialog_tap_click_edit"
         android:textColor="#FFFFFF"
         android:layout_marginTop="5dp"
-        android:textSize="8sp"
+        android:textSize="12sp"
         android:text="@string/tap_hint"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"/>

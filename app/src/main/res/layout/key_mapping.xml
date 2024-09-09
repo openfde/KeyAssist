@@ -40,22 +40,24 @@
                 android:layout_width="match_parent"
                 android:layout_height="35dp">
                 <TextView
+                    android:layout_weight="1"
                     android:layout_gravity="center_vertical"
                     android:layout_marginLeft="10dp"
                     android:id="@+id/key_mapping_plan_text"
                     android:textColor="#FFFFFF"
                     android:textSize="14sp"
-                    android:gravity="center"
+                    android:gravity="center_vertical"
                     android:text="默认"
                     android:layout_width="wrap_content"
                     android:layout_height="35dp"/>
                 <ImageView
+                    android:layout_marginRight="10dp"
                     android:layout_gravity="center_vertical"
                     android:id="@+id/key_mapping_spinner_down"
                     android:src="@drawable/key_mapping_spinner_down"
                     android:layout_marginLeft="10dp"
-                    android:layout_width="25dp"
-                    android:layout_height="25dp"/>
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"/>
             </LinearLayout>
 
         </LinearLayout>

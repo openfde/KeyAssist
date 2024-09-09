@@ -243,7 +243,7 @@ public class ModifyDialog extends BaseServiceDialog implements View.OnClickListe
         // 方向键
         View view = LayoutInflater.from(getContext()).inflate(R.layout.modify_dialog_direct_click,null,false);
         layoutParams.width = 80;
-        layoutParams.height = 100;
+        layoutParams.height = 120;
         layoutParams.x = (int)event.getRawX() - layoutParams.width/2;
         layoutParams.y = (int)event.getRawY() - layoutParams.height/2;
         windowManager.addView(view,layoutParams);
