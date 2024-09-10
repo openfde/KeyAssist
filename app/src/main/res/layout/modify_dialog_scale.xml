@@ -14,9 +14,10 @@
         android:layout_height="wrap_content"/>
 
     <ImageView
+        android:background="@drawable/rect_background"
         android:layout_centerInParent="true"
         android:layout_width="30dp"
-        android:src="@drawable/scale_bg"
+        android:src="@drawable/scale_bg_1"
         android:layout_height="30dp"/>
 
     <TextView

@@ -19,6 +19,7 @@ import com.fde.keyassist.R;
 import com.fde.keyassist.util.Constant;
 import com.genymobile.scrcpy.Device;
 
+import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -30,6 +31,15 @@ import java.util.concurrent.TimeUnit;
 
 public class EventUtils {
 
+    // 点击事件线程池
+   public static ThreadPoolExecutor tapThreadPoolExecutor = new ThreadPoolExecutor(
+           20,
+            30,
+            60,
+            TimeUnit.DAYS,
+            new ArrayBlockingQueue<>(10),
+            Executors.defaultThreadFactory(),
+            new ThreadPoolExecutor.AbortPolicy());
 
     public static void injectMotionEvent(int inputSource, int action, long downTime, long when,
                                          float x, float y, float pressure, int displayId) {
@@ -65,7 +75,7 @@ public class EventUtils {
     // 点击事件
     public static void tapClick(int x, int y) {
 
-        new Thread(new Runnable() {
+        tapThreadPoolExecutor.execute(new Runnable() {
             @Override
             public void run() {
                 long now = SystemClock.uptimeMillis();
@@ -73,7 +83,7 @@ public class EventUtils {
                         0);
                 injectMotionEvent(InputDevice.SOURCE_TOUCHSCREEN, MotionEvent.ACTION_UP, now, now, x, y, 0.0f, 0);
             }
-        }).start();
+        });
 
 
     }
