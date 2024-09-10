@@ -1036,4 +1036,9 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
         return bounds;
     }
 
+    // 关闭任务栏
+    public void closeTaskbar(){
+
+    }
+
 }
