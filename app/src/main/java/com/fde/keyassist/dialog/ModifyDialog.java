@@ -28,6 +28,7 @@ import com.fde.keyassist.FloatingService;
 import com.fde.keyassist.R;
 import com.fde.keyassist.entity.AmplifyMappingEntity;
 import com.fde.keyassist.entity.CursorEntity;
+import com.fde.keyassist.entity.DialogEntity;
 import com.fde.keyassist.entity.DirectMappingEntity;
 import com.fde.keyassist.entity.DoubleClickMappingEntity;
 import com.fde.keyassist.entity.KeyMappingEntity;
@@ -53,6 +54,7 @@ public class ModifyDialog extends BaseServiceDialog implements View.OnClickListe
     private Integer eventType = Constant.TAP_CLICK_EVENT;
 
     private Boolean cursorSwitch = false;
+    private Boolean dialogSwitch = false;
 
     private TextView curText;
     private TextView lastText;
@@ -99,6 +101,14 @@ public class ModifyDialog extends BaseServiceDialog implements View.OnClickListe
 
     public void setCursorSwitch(Boolean cursorSwitch) {
         this.cursorSwitch = cursorSwitch;
+    }
+
+    public void setDialogSwitch(Boolean dialogSwitch){
+        this.dialogSwitch = dialogSwitch;
+    }
+
+    public Boolean getDialogSwitch(){
+        return dialogSwitch;
     }
 
     public void setEventType(Integer eventType) {
@@ -409,6 +419,7 @@ public class ModifyDialog extends BaseServiceDialog implements View.OnClickListe
             LitePal.deleteAll(DoubleClickMappingEntity.class, "planId = ?" , plans.get(0).getId().toString());
             LitePal.deleteAll(ScaleMappingEntity.class, "planId = ?" , plans.get(0).getId().toString());
             LitePal.deleteAll(CursorEntity.class, "planId = ?" , plans.get(0).getId().toString());
+            LitePal.deleteAll(DialogEntity.class, "planId = ?" , plans.get(0).getId().toString());
             LitePal.deleteAll(AmplifyMappingEntity.class, "planId = ?" , plans.get(0).getId().toString());
         }
         // 保存单个按键
@@ -421,6 +432,8 @@ public class ModifyDialog extends BaseServiceDialog implements View.OnClickListe
         saveScaleEvent();
         // 保存鼠标状态
         saveCursor();
+
+        saveDialog();
 
         saveAmplifyEvent();
 
@@ -453,6 +466,21 @@ public class ModifyDialog extends BaseServiceDialog implements View.OnClickListe
             cursorEntity.setPlanId(plan.getId());
         }
         cursorEntity.save();
+    }
+
+    public void saveDialog(){
+        DialogEntity dialogEntity = new DialogEntity();
+        dialogEntity.setDialogSwitch(dialogSwitch);
+        List<Plan> plans = LitePal.where("planName = ?",planName).find(Plan.class);
+        if(plans != null && plans.size() >=1){
+            dialogEntity.setPlanId(plans.get(0).getId());
+        }else{
+            Plan plan = new Plan();
+            plan.setPlanName(planName);
+            plan.save();
+            dialogEntity.setPlanId(plan.getId());
+        }
+        dialogEntity.save();
     }
 
     public void saveTapEvent(){
@@ -835,6 +863,20 @@ public class ModifyDialog extends BaseServiceDialog implements View.OnClickListe
         }
     }
 
+    public void showDialog(){
+        // 取出planId
+        List<Plan> plans = LitePal.where("planName = ?",planName).find(Plan.class);
+        List<DialogEntity> dialogEntities = new ArrayList<>();
+        if(plans != null && plans.size() >=1){
+            Plan plan = plans.get(0);
+            dialogEntities = LitePal.where("planId = ?", plan.getId().toString()).find(DialogEntity.class);
+        }
+        if(dialogEntities!= null && !dialogEntities.isEmpty()){
+            DialogEntity dialog = dialogEntities.get(0);
+            dialogSwitch = dialog.getDialogSwitch();
+        }
+    }
+
     // 从数据库取出所有事件
     public void showView(){
         showTapEvent();
@@ -842,6 +884,7 @@ public class ModifyDialog extends BaseServiceDialog implements View.OnClickListe
         showDoubleClickEvent();
         showScaleEvent();
         showCursor();
+        showDialog();
         showAmplifyEvent();
     }
 

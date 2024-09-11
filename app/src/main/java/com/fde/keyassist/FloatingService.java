@@ -2,6 +2,8 @@ package com.fde.keyassist;
 
 
 
+
+
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.ActivityManager;
@@ -36,6 +38,7 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.Button;
@@ -74,6 +77,7 @@ import java.io.FileReader;
 import java.io.IOException;
 
 import java.lang.reflect.Field;
+import java.sql.SQLOutput;
 import java.util.ArrayList;
 
 import java.util.Iterator;
@@ -94,12 +98,12 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
     private boolean isChange = false; // 是否正在修改
     private ModifyDialog modifyDialog;
 
-    private Button key_mapping_save;
-    private Button key_mapping_cancel;
+    private Button key_mapping_hide_save;
+    private Button key_mapping_edit_cancel;
     private ImageView key_mapping_tap_click;
 
     private ApplyDialog applyDialog;
-    private Button key_mapping_apply;
+    private Button key_mapping_apply_and_cancel;
     private Boolean isApply = false;
 
     private Boolean editAndCancal = true;
@@ -151,6 +155,8 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
 
     private Boolean cursorMake = true;
 
+    private Boolean dialogMake = true;
+
     private ImageView dropdown_menu_import;
 
     private ImageView key_mapping_amplify;
@@ -160,6 +166,10 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
     private Boolean applyClick = true; // 是否可点击
     private Boolean editClick = true; // 编辑可点击
     private Boolean exitClick = true; // 退出可点击
+
+    private ImageView key_mapping_close_dialog;
+
+    private Boolean hide = false;
 
 
 
@@ -179,11 +189,9 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
         applyDialog = new ApplyDialog(Constant.planName, this);
         // 导入预设按键
         FileUtil.league(this);
-
-//        saveTask();
-
-//        resizeTask();
-
+        int heigh = getScreenHeight(this);
+        floatParams.y = heigh-100;
+        floatWindow.updateViewLayout(floatView,floatParams);
 
     }
 
@@ -193,11 +201,40 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
     @SuppressLint("ClickableViewAccessibility")
     private void showFloatView() {
         floatView = LayoutInflater.from(this).inflate(R.layout.background_window,null,false);
-        floatParams = createLayoutParams();
-        floatWindow = createWindow(50, 50, floatView, floatParams);
+        floatParams = createFloatLayoutParams();
+        floatWindow = createFloatWindow(50, 50, floatView, floatParams);
+
         dragView(floatView,floatWindow,floatParams,"showKeyMapping");
+        hoverShowView(floatView);
+//        Adsorption(floatParams);
         onkey();
 
+    }
+
+    public void hoverShowView(View view){
+        int width = getScreenWidth(this);
+        // 设置 hover 事件监听
+        view.setOnHoverListener(new View.OnHoverListener() {
+            @Override
+            public boolean onHover(View v, MotionEvent event) {
+                switch (event.getAction()) {
+                    case MotionEvent.ACTION_HOVER_ENTER:
+                        break;
+                    case MotionEvent.ACTION_HOVER_MOVE:
+                        if(floatParams.x + 50 >= width ){
+//                            floatParams.x = width;
+//                            floatWindow.updateViewLayout(floatView,floatParams);
+                            floatParams.x = (int)(width - floatView.getWidth()) ; // 设置透明度为 0，完全透明
+                            floatWindow.updateViewLayout(floatView, floatParams);
+                        }
+                        break;
+                    case MotionEvent.ACTION_HOVER_EXIT:
+                        Adsorption(floatParams);
+                        break;
+                }
+                return true;
+            }
+        });
     }
 
     public void startListenerKey(){
@@ -206,16 +243,19 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
 //                | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
                 | WindowManager.LayoutParams.FLAG_SCALED
                 | WindowManager.LayoutParams.FLAG_LAYOUT_INSET_DECOR
-                | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN;
+                | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN
+        ;
+
         floatWindow.updateViewLayout(floatView,floatParams);
     }
     public void endListenerKey(){
         floatParams.flags = WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
                 | WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
                 | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
-                | WindowManager.LayoutParams.FLAG_SCALED
+//                | WindowManager.LayoutParams.FLAG_SCALED
                 | WindowManager.LayoutParams.FLAG_LAYOUT_INSET_DECOR
-                | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN;
+                | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN
+                | WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS;
         floatWindow.updateViewLayout(floatView,floatParams);
     }
 
@@ -290,17 +330,18 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
         mainView = LayoutInflater.from(this).inflate(R.layout.key_mapping,null,false);
         mainParams = createLayoutParams();
         mainWindow = createWindow(350, 450, mainView, mainParams);
-        dragView(mainView,mainWindow,mainParams,"");
+//        dragView(mainView,mainWindow,mainParams,"");
+        dragWindowView(mainView,mainWindow,mainParams,"");
 //        Button key_mapping_click = mainView.findViewById(R.id.key_mapping_tap_click);
-//        key_mapping_save = mainView.findViewById(R.id.key_mapping_save);
-        key_mapping_save = mainView.findViewById(R.id.key_mapping_save);
-        key_mapping_save.setOnClickListener(this);
-        key_mapping_cancel = mainView.findViewById(R.id.key_mapping_cancel);
-        key_mapping_cancel.setOnClickListener(this);
+//        key_mapping_hide_save = mainView.findViewById(R.id.key_mapping_hide_save);
+        key_mapping_hide_save = mainView.findViewById(R.id.key_mapping_hide_save);
+        key_mapping_hide_save.setOnClickListener(this);
+        key_mapping_edit_cancel = mainView.findViewById(R.id.key_mapping_edit_cancel);
+        key_mapping_edit_cancel.setOnClickListener(this);
         key_mapping_tap_click = mainView.findViewById(R.id.key_mapping_tap_click);
         key_mapping_tap_click.setOnClickListener(this);
-        key_mapping_apply = mainView.findViewById(R.id.key_mapping_apply);
-        key_mapping_apply.setOnClickListener(this);
+        key_mapping_apply_and_cancel = mainView.findViewById(R.id.key_mapping_apply_and_cancel);
+        key_mapping_apply_and_cancel.setOnClickListener(this);
         key_mapping_direct_click = mainView.findViewById(R.id.key_mapping_direct_click);
         key_mapping_direct_click.setOnClickListener(this);
         key_mapping_plan_linear = mainView.findViewById(R.id.key_mapping_plan_linear);
@@ -326,16 +367,19 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
         key_mapping_exit = mainView.findViewById(R.id.key_mapping_exit);
         key_mapping_exit.setOnClickListener(this);
 
+        key_mapping_close_dialog = mainView.findViewById(R.id.key_mapping_close_dialog);
+        key_mapping_close_dialog.setOnClickListener(this);
+
         isMainWindow = true;
 
 
 
         if(isApply){
-            key_mapping_apply.setText(getString(R.string.cancel));
+            key_mapping_apply_and_cancel.setText(getString(R.string.cancel));
         }
 
         if(!editClick){
-            key_mapping_cancel.setBackgroundResource(R.drawable.key_mapping_cancel_no_click);
+            key_mapping_edit_cancel.setBackgroundResource(R.drawable.key_mapping_cancel_no_click);
         }
         if(!exitClick){
             key_mapping_exit.setTextColor(Color.parseColor("#A9A9A9"));
@@ -348,6 +392,8 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
 
     // 创建窗口参数
     public WindowManager.LayoutParams createLayoutParams() {
+
+
         WindowManager.LayoutParams params = new WindowManager.LayoutParams();
         params.flags = WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
                 | WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
@@ -364,6 +410,45 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
         }
         params.format = PixelFormat.TRANSLUCENT;
         return params;
+    }
+
+    // 创建窗口参数
+    public WindowManager.LayoutParams createFloatLayoutParams() {
+
+
+        WindowManager.LayoutParams params = new WindowManager.LayoutParams();
+
+        params.flags = WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
+                | WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
+                | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+                | WindowManager.LayoutParams.FLAG_SCALED
+                | WindowManager.LayoutParams.FLAG_LAYOUT_INSET_DECOR
+                | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN;
+
+
+        if (Build.VERSION.SDK_INT >= 26) {
+            params.type = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
+        } else {
+            params.type = WindowManager.LayoutParams.TYPE_SYSTEM_ALERT;
+        }
+        params.format = PixelFormat.TRANSLUCENT;
+        return params;
+    }
+
+    // 创建窗口
+    public WindowManager createFloatWindow(int width, int height, View view, WindowManager.LayoutParams params){
+//        WindowManager windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
+        WindowManager windowManager = (WindowManager) this.getSystemService(WINDOW_SERVICE);
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        windowManager.getDefaultDisplay().getMetrics(displayMetrics);
+        params.width = width;
+        params.height = height;
+        params.x = displayMetrics.widthPixels;
+        params.y = displayMetrics.heightPixels;
+        params.type = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
+        params.gravity = Gravity.TOP | Gravity.START;
+        windowManager.addView(view,params);
+        return windowManager;
     }
 
     // 创建窗口
@@ -416,9 +501,7 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
                         break;
                     case MotionEvent.ACTION_UP:
                         if (!isMoving) {
-                            if(methodName.equals("showKeyMapping")){
-                                showKeyMapping();
-                            }
+                            showKeyMapping();
                             return true;
                         }else{
                             //更新View的位置
@@ -432,6 +515,53 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
         });
 
     }
+
+    public void dragWindowView(View view,WindowManager windowManager,WindowManager.LayoutParams params,String methodName){
+        view.setClickable(true);
+        // 拖拽事件
+        view.setOnTouchListener(new View.OnTouchListener() {
+            private int x;
+            private int y;
+            //是否在移动
+            private boolean isMoving;
+            @SuppressLint("ClickableViewAccessibility")
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                switch (event.getAction()) {
+                    case MotionEvent.ACTION_DOWN:
+                        x = (int) event.getRawX();
+                        y = (int) event.getRawY();
+                        isMoving = false;
+                        return true;
+                    case MotionEvent.ACTION_MOVE:
+                        int nowX = (int) event.getRawX();
+                        int nowY = (int) event.getRawY();
+                        int moveX = nowX - x;
+                        int moveY = nowY - y;
+                        if (Math.abs(moveX) > 0 || Math.abs(moveY) > 0) {
+                            isMoving = true;
+                            params.x += moveX;
+                            params.y += moveY;
+                            windowManager.updateViewLayout(view, params);
+                            x = nowX;
+                            y = nowY;
+                            return true;
+                        }
+                        break;
+                    case MotionEvent.ACTION_UP:
+                        if (!isMoving) {
+                            return true;
+                        }else{
+                            windowManager.updateViewLayout(view, params);
+                        }
+                        break;
+                }
+                return false;
+            }
+        });
+
+    }
+
 
     public int[] getPosition(int keycode,String keyValue){
         int x = -1;
@@ -557,12 +687,26 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
                  applyDialog.cancal();
                  isApply = false;
 
-                 key_mapping_apply.setText(getString(R.string.apply));
+                 key_mapping_apply_and_cancel.setText(getString(R.string.apply));
                  closeCursor();
                  mainWindow.removeView(mainView);
                  floatWindow.removeView(floatView);
 
                  stopSelf();
+                 break;
+
+             case R.id.key_mapping_close_dialog:
+                 if(!editAndCancal){
+                     if(dialogMake){
+                         modifyDialog.setDialogSwitch(true);
+                         dialogMake = !dialogMake;
+                         setDialogBack(true);
+                     }else{
+                         modifyDialog.setDialogSwitch(false);
+                         dialogMake = !dialogMake;
+                         setDialogBack(false);
+                     }
+                 }
                  break;
 
              case R.id.key_mapping_open_cursor:
@@ -676,13 +820,15 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
                      setButtonBack(key_mapping_scale);
                  }
                  break;
-             case R.id.key_mapping_apply:
+                 // 应用和取消
+             case R.id.key_mapping_apply_and_cancel:
+                 // 应用
                  if(!isApply && editAndCancal){
                      resizeTask();
                      // 退出和编辑不可使用
                      exitClick = false;
                      editClick = false;
-                     key_mapping_cancel.setBackgroundResource(R.drawable.key_mapping_cancel_no_click);
+                     key_mapping_edit_cancel.setBackgroundResource(R.drawable.key_mapping_cancel_no_click);
                      key_mapping_exit.setBackgroundResource(R.drawable.key_mapping_apply_no_click);
 
                      startListenerKey();
@@ -701,85 +847,94 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
                      }else{
                          closeCursor();
                      }
+                     Boolean dialog = applyDialog.applyDialog();
+                     if(dialog){
+                         openTaskBar();
+                     }else{
+                         closeTaskbar();
+                     }
                      isApply = true;
                      isMainWindow = false;
-                     key_mapping_apply.setText(getString(R.string.cancel));
+                     key_mapping_apply_and_cancel.setText(getString(R.string.cancel));
                      mainWindow.removeView(mainView);
+                     Adsorption(floatParams);
+                     // 取消
                  }else{
                      if(applyDialog!=null) {
                          if(!applyClick){
                              break;
                          }
-                         key_mapping_cancel.setBackgroundResource(R.drawable.key_mapping_cancel);
+                         key_mapping_edit_cancel.setBackgroundResource(R.drawable.key_mapping_cancel);
                          key_mapping_exit.setTextColor(Color.parseColor("#FFFFFF"));
                          exitClick = true;
                          editClick = true;
                          endListenerKey();
                          applyDialog.cancal();
                          isApply = false;
-                         key_mapping_apply.setText(getString(R.string.apply));
+                         key_mapping_apply_and_cancel.setText(getString(R.string.apply));
                          closeCursor();
                      }
                  }
                  break;
-             case R.id.key_mapping_save:
+             // 隐藏和保存
+             case R.id.key_mapping_hide_save:
                  setButtonBack(null);
                  setCursorBack(false);
+                 setDialogBack(false);
                  if(!editAndCancal) {
                      applyClick = true;
                      exitClick = true;
-                     key_mapping_apply.setTextColor(Color.parseColor("#FFFFFF"));
+                     key_mapping_apply_and_cancel.setTextColor(Color.parseColor("#FFFFFF"));
                      key_mapping_exit.setTextColor(Color.parseColor("#FFFFFF"));
 
                      modifyDialog.save();
-                     key_mapping_cancel.setText(getString(R.string.edit));
+                     key_mapping_edit_cancel.setText(getString(R.string.edit));
                      isChange = false;
                      editAndCancal = true;
-                     key_mapping_save.setText(getString(R.string.hide));
+                     key_mapping_hide_save.setText(getString(R.string.hide));
                      saveTask();
 
                  }else{
-                     endListenerKey();
-//                     applyDialog.cancal();
-//                     isApply = false;
-//                     key_mapping_apply.setText(getString(R.string.apply));
+//                     Adsorption(floatParams);
+//                     endListenerKey();
                      isMainWindow = false;
                      mainWindow.removeView(mainView);
                  }
                  break;
-             case R.id.key_mapping_cancel:
+                 // 编辑和取消
+             case R.id.key_mapping_edit_cancel:
                  if(!editClick){
                      break;
                  }
                  setButtonBack(null);
                  setCursorBack(false);
+                 setDialogBack(false);
                  // 编辑
                      if(editAndCancal){
                          applyClick = false;
                          exitClick = false;
-                         key_mapping_apply.setTextColor(Color.parseColor("#A9A9A9"));
+                         key_mapping_apply_and_cancel.setTextColor(Color.parseColor("#A9A9A9"));
                          key_mapping_exit.setTextColor(Color.parseColor("#A9A9A9"));
-
-
-                         key_mapping_save.setText(getString(R.string.save));
+                         key_mapping_hide_save.setText(getString(R.string.save));
                          applyDialog.cancal();
                          isApply = false;
                          editAndCancal = false;
-                         key_mapping_apply.setText(getString(R.string.apply));
+                         key_mapping_apply_and_cancel.setText(getString(R.string.apply));
                          endListenerKey();
-                         key_mapping_cancel.setText(getString(R.string.cancel));
+                         key_mapping_edit_cancel.setText(getString(R.string.cancel));
                          startModify(Constant.planName);
                          modifyDialog.showView(); //单击事件
                          setCursorBack(modifyDialog.getCursorSwitch());
+                         setDialogBack(modifyDialog.getDialogSwitch());
                      }else{
                          applyClick = true;
                          exitClick = true;
-                         key_mapping_apply.setTextColor(Color.parseColor("#FFFFFF"));
+                         key_mapping_apply_and_cancel.setTextColor(Color.parseColor("#FFFFFF"));
                          key_mapping_exit.setTextColor(Color.parseColor("#FFFFFF"));
 
-                         key_mapping_save.setText(getString(R.string.hide));
+                         key_mapping_hide_save.setText(getString(R.string.hide));
                          editAndCancal = true;
-                         key_mapping_cancel.setText(getString(R.string.edit));
+                         key_mapping_edit_cancel.setText(getString(R.string.edit));
                          modifyDialog.cancel();
                          isChange = false;
                      }
@@ -823,6 +978,13 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
         }
     }
 
+    public void setDialogBack(Boolean b){
+        if(b){
+            key_mapping_close_dialog.setBackgroundResource(R.drawable.key_mapping_key_background_click);
+        }else{
+            key_mapping_close_dialog.setBackgroundResource(R.drawable.key_mapping_key_background);
+        }
+    }
 
 
 
@@ -874,8 +1036,13 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
     public void Adsorption(WindowManager.LayoutParams params){
         int width = getScreenWidth(this);
         int heigh = getScreenHeight(this);
-        if(params.x + 200 > width){
-            params.x = width;
+
+        if(params.x + 800 > width){
+            // 隐藏图标
+            params.flags =params.flags
+                    | WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS;
+            params.x = (int)(width - floatView.getWidth()/4) ;
+            floatWindow.updateViewLayout(floatView, params);
         }
     }
 
@@ -1033,9 +1200,20 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
         return bounds;
     }
 
-    // 关闭任务栏
+    // 打开任务栏
+    public void openTaskBar(){
+        // 隐藏状态栏和导航栏
+//        floatWindow.removeView(floatView);
+        floatParams.flags = WindowManager.LayoutParams.FLAG_FULLSCREEN | floatParams.flags ;
+//        floatWindow.addView(floatView,floatParams);
+        floatWindow.updateViewLayout(floatView,floatParams);
+    }
     public void closeTaskbar(){
-
+        // 隐藏状态栏和导航栏
+//        floatWindow.removeView(floatView);
+        floatParams.flags = WindowManager.LayoutParams.FLAG_FULLSCREEN | floatParams.flags ;
+//        floatWindow.addView(floatView,floatParams);
+        floatWindow.updateViewLayout(floatView,floatParams);
     }
 
 }

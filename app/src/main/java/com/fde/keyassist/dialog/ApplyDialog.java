@@ -21,6 +21,7 @@ import android.widget.TextView;
 import com.fde.keyassist.R;
 import com.fde.keyassist.entity.AmplifyMappingEntity;
 import com.fde.keyassist.entity.CursorEntity;
+import com.fde.keyassist.entity.DialogEntity;
 import com.fde.keyassist.entity.DirectMappingEntity;
 import com.fde.keyassist.entity.DoubleClickMappingEntity;
 import com.fde.keyassist.entity.KeyMappingEntity;
@@ -253,6 +254,19 @@ public class ApplyDialog {
         }
         if(cursorEntities != null && !cursorEntities.isEmpty()){
             return cursorEntities.get(0).getCursorSwitch();
+        }
+        return false;
+    }
+
+    public Boolean applyDialog(){
+        List<DialogEntity> dialogEntities = new ArrayList<>();
+        List<Plan> plans = LitePal.where("planName = ?",planName).find(Plan.class);
+        if(plans != null && plans.size() >=1){
+            Plan plan = plans.get(0);
+            dialogEntities = LitePal.where("planId = ?", plan.getId().toString()).find(DialogEntity.class);
+        }
+        if(dialogEntities != null && !dialogEntities.isEmpty()){
+            return dialogEntities.get(0).getDialogSwitch();
         }
         return false;
     }
