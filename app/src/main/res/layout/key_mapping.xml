@@ -16,7 +16,7 @@
         <Button
             android:layout_weight="1.5"
             android:layout_marginLeft="20dp"
-            android:id="@+id/key_mapping_apply"
+            android:id="@+id/key_mapping_apply_and_cancel"
             android:gravity="center_vertical|center_horizontal"
             android:layout_gravity="center_vertical"
             android:background="@drawable/key_mapping_apply"
@@ -251,6 +251,42 @@
                 android:layout_height="wrap_content"/>
         </LinearLayout>
 
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_marginTop="30dp"
+        android:layout_below="@+id/key_mapping_control_2"
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_weight="1"
+            android:layout_width="0dp"
+            android:layout_height="match_parent">
+            <ImageView
+                android:id="@+id/key_mapping_close_dialog"
+                android:layout_gravity="center"
+                android:background="@drawable/key_mapping_key_background"
+                android:contentDescription="TODO"
+                android:src="@drawable/dialog"
+                android:layout_width="30dp"
+                android:layout_height="30dp"/>
+            <TextView
+                android:layout_marginTop="5dp"
+                android:gravity="center_horizontal"
+                android:textColor="#FFFFFF"
+                android:layout_gravity="center"
+                android:textSize="@dimen/control_button_text_size"
+                android:text="@string/dialog"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
+        </LinearLayout>
+
+
+
     </LinearLayout>
 
 
@@ -263,14 +299,14 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
         <Button
-            android:id="@+id/key_mapping_cancel"
+            android:id="@+id/key_mapping_edit_cancel"
             android:background="@drawable/key_mapping_cancel"
             android:layout_weight="1"
             android:text="@string/edit"
             android:layout_width="0dp"
             android:layout_height="30dp"/>
         <Button
-            android:id="@+id/key_mapping_save"
+            android:id="@+id/key_mapping_hide_save"
             android:layout_marginLeft="20dp"
             android:background="@drawable/key_mapping_cancel"
             android:layout_weight="1"
