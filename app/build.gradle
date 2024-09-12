@@ -58,7 +58,6 @@ android {
 
 dependencies {
     compileOnly files('libs/framework.jar')
-    implementation project(':restrictionbypass')
 
     implementation 'org.litepal.guolindev:core:3.2.3'
     implementation 'androidx.recyclerview:recyclerview:1.2.1'
