@@ -3,7 +3,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="com.fde.keyassist"
     android:sharedUserId="android.uid.system"
-    android:sharedUserMaxSdkVersion="32"
     tools:targetApi="tiramisu">
 
     <uses-permission
