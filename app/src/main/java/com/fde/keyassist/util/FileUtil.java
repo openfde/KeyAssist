@@ -8,6 +8,7 @@ import android.util.Log;
 
 import com.fde.keyassist.entity.AmplifyMappingEntity;
 import com.fde.keyassist.entity.CursorEntity;
+import com.fde.keyassist.entity.DialogEntity;
 import com.fde.keyassist.entity.DirectMappingEntity;
 import com.fde.keyassist.entity.DoubleClickMappingEntity;
 import com.fde.keyassist.entity.KeyMappingEntity;
@@ -89,6 +90,8 @@ public class FileUtil {
             List<CursorEntity> cursorEntities = new ArrayList<>();
             cursorEntities = LitePal.where("planId = ?", plan.getId().toString()).find(CursorEntity.class);
 
+            List<DialogEntity> dialogEntities = new ArrayList<>();
+            dialogEntities =  LitePal.where("planId = ?", plan.getId().toString()).find(DialogEntity.class);
 
             // 定义保存 JSON 文件的文件夹
 //            File outputDir = new File(context.getExternalFilesDir(null), plan.getPlanName()+"json_files");
@@ -120,6 +123,7 @@ public class FileUtil {
             list.add(cursorEntities);
             list.add(curScaleMappingEntity);
             list.add(amplifyMappingEntities);
+            list.add(dialogEntities);
             exportListToJson(list,new File(outputDir,planName+".json"));
         }
 
@@ -148,19 +152,35 @@ public class FileUtil {
                         JsonElement jsonElement = JsonParser.parseReader(reader);
                         if(jsonElement.isJsonArray()){
                             JsonArray jsonArray = jsonElement.getAsJsonArray(); // 全部对象
-                            jsonTokeyMapping(jsonArray.get(0).getAsJsonArray(),plan.getId());
-                            jsonToDirect(jsonArray.get(1).getAsJsonArray(),plan.getId());
-                            jsonToDoubleClickMapping(jsonArray.get(2).getAsJsonArray(),plan.getId());
-                            jsonToCursorEntity(jsonArray.get(3).getAsJsonArray(),plan.getId());
-                            jsonToScale(jsonArray.get(4).getAsJsonArray(),plan.getId());
-                            jsonToAmplify(jsonArray.get(5).getAsJsonArray(),plan.getId());
+                            if(jsonArray.size()>=1) {
+                                jsonTokeyMapping(jsonArray.get(0).getAsJsonArray(), plan.getId());
+                            }
+                            if(jsonArray.size() >= 2){
+                                jsonToDirect(jsonArray.get(1).getAsJsonArray(),plan.getId());
+                            }
+                            if(jsonArray.size()>=3){
+                                jsonToDoubleClickMapping(jsonArray.get(2).getAsJsonArray(),plan.getId());
+                            }
+                            if(jsonArray.size()>=4){
+                                jsonToCursorEntity(jsonArray.get(3).getAsJsonArray(),plan.getId());
+                            }
+                            if(jsonArray.size() >=5){
+                                jsonToScale(jsonArray.get(4).getAsJsonArray(),plan.getId());
+                            }
+                            if(jsonArray.size() >=6){
+                                jsonToAmplify(jsonArray.get(5).getAsJsonArray(),plan.getId());
+                            }
+                            if(jsonArray.size()>=7){
+                                jsonToDialog(jsonArray.get(6).getAsJsonArray(),plan.getId());
+                            }
+
                         }
 
                     }
                 }
             }
         }catch (Exception e){
-
+            e.printStackTrace();
         }
     }
 
@@ -315,6 +335,19 @@ public class FileUtil {
             // 使用Gson将JSON字符串转换为Person对象
             Gson gson = new Gson();
             ScaleMappingEntity keyMapping = gson.fromJson(jsonString, ScaleMappingEntity.class);
+            keyMapping.setPlanId(planId);
+            keyMapping.assignBaseObjId(0);
+            keyMapping.save();
+        }
+    }
+
+    public static void jsonToDialog(JsonArray jsonArray,Integer planId){
+        for(int i=0;i<jsonArray.size();i++){
+            JsonObject jsonObject = jsonArray.get(i).getAsJsonObject();
+            String jsonString = jsonObject.toString();
+            // 使用Gson将JSON字符串转换为Person对象
+            Gson gson = new Gson();
+            DialogEntity keyMapping = gson.fromJson(jsonString, DialogEntity.class);
             keyMapping.setPlanId(planId);
             keyMapping.assignBaseObjId(0);
             keyMapping.save();

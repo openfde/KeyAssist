@@ -28,6 +28,7 @@ import android.os.IBinder;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.os.ParcelableParcel;
+import android.provider.Settings;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Display;
@@ -38,10 +39,12 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewRootImpl;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.Button;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
@@ -192,7 +195,7 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
         int heigh = getScreenHeight(this);
         floatParams.y = heigh-100;
         floatWindow.updateViewLayout(floatView,floatParams);
-
+//        openTaskBar();
     }
 
 
@@ -237,7 +240,7 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
         });
     }
 
-    public void startListenerKey(){
+    public void startListenerKey() {
         floatParams.flags = WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
                 | WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
 //                | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
@@ -245,8 +248,18 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
                 | WindowManager.LayoutParams.FLAG_LAYOUT_INSET_DECOR
                 | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN
         ;
+//        floatParams.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+//                | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+//                | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+//                | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+//                | View.SYSTEM_UI_FLAG_FULLSCREEN
+//                | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
+//
+//        floatWindow.updateViewLayout(floatView,floatParams);
 
-        floatWindow.updateViewLayout(floatView,floatParams);
+
+
+
     }
     public void endListenerKey(){
         floatParams.flags = WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
@@ -418,7 +431,8 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
 
         WindowManager.LayoutParams params = new WindowManager.LayoutParams();
 
-        params.flags = WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
+        params.flags =
+                WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
                 | WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
                 | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
                 | WindowManager.LayoutParams.FLAG_SCALED
@@ -1200,19 +1214,45 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
         return bounds;
     }
 
-    // 打开任务栏
+    // 关闭任务栏
     public void openTaskBar(){
-        // 隐藏状态栏和导航栏
-//        floatWindow.removeView(floatView);
-        floatParams.flags = WindowManager.LayoutParams.FLAG_FULLSCREEN | floatParams.flags ;
-//        floatWindow.addView(floatView,floatParams);
+//        floatParams.flags = floatParams.flags | WindowManager.LayoutParams.FLAG_FULLSCREEN;
+//        floatWindow.updateViewLayout(floatView, floatParams);
+        ViewRootImpl obj = (ViewRootImpl) floatView.getParent();
+        Class c = obj.getClass();
+        try{
+            Field field = c.getDeclaredField("mWindowAttributes");
+            WindowManager.LayoutParams params = (WindowManager.LayoutParams)field.get(obj);
+            params.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_IMMERSIVE
+                    | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
+        }catch (Exception e){
+            e.printStackTrace();
+        }
         floatWindow.updateViewLayout(floatView,floatParams);
     }
+
+
     public void closeTaskbar(){
-        // 隐藏状态栏和导航栏
-//        floatWindow.removeView(floatView);
-        floatParams.flags = WindowManager.LayoutParams.FLAG_FULLSCREEN | floatParams.flags ;
-//        floatWindow.addView(floatView,floatParams);
+//        // 隐藏状态栏和导航栏
+//        ViewRootImpl obj = (ViewRootImpl) floatView.getParent();
+//        Class c = obj.getClass();
+//        try{
+//            Field field = c.getDeclaredField("mWindowAttributes");
+//            WindowManager.LayoutParams params = (WindowManager.LayoutParams)field.get(obj);
+//            params.systemUiVisibility = null;
+//        }catch (Exception e){
+//            e.printStackTrace();
+//        }
+        ViewRootImpl obj = (ViewRootImpl) floatView.getParent();
+        Class c = obj.getClass();
+        try{
+            Field field = c.getDeclaredField("mWindowAttributes");
+            WindowManager.LayoutParams params = (WindowManager.LayoutParams)field.get(obj);
+            params.systemUiVisibility =params.systemUiVisibility & ~( View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_IMMERSIVE
+                    | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
         floatWindow.updateViewLayout(floatView,floatParams);
     }
 
