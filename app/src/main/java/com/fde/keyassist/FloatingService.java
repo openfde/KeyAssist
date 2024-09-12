@@ -1233,16 +1233,6 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
 
 
     public void closeTaskbar(){
-//        // 隐藏状态栏和导航栏
-//        ViewRootImpl obj = (ViewRootImpl) floatView.getParent();
-//        Class c = obj.getClass();
-//        try{
-//            Field field = c.getDeclaredField("mWindowAttributes");
-//            WindowManager.LayoutParams params = (WindowManager.LayoutParams)field.get(obj);
-//            params.systemUiVisibility = null;
-//        }catch (Exception e){
-//            e.printStackTrace();
-//        }
         ViewRootImpl obj = (ViewRootImpl) floatView.getParent();
         Class c = obj.getClass();
         try{
