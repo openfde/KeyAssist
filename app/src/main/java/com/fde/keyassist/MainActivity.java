@@ -16,6 +16,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Rect;
+import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
@@ -26,6 +27,7 @@ import android.widget.ImageView;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import com.android.internal.policy.DecorView;
 import com.fde.keyassist.fragment.ConfigManageFragment;
 import com.fde.keyassist.fragment.UserProfileFragment;
 
@@ -33,6 +35,10 @@ import org.litepal.LitePal;
 
 import java.lang.reflect.Method;
 import java.util.List;
+
+import android.graphics.drawable.ColorDrawable;
+import android.graphics.Color;
+
 
 
 public class MainActivity extends Activity{
@@ -62,6 +68,15 @@ public class MainActivity extends Activity{
         }
         Intent intent = new Intent(MainActivity.this,FloatingService.class);
         startService(intent);
+
+
+        // 隐藏状态栏
+//        DecorView decorView = (DecorView) getWindow().getDecorView();
+//        decorView.startFullScreenWindow();
+////        getWindow().setBackgroundDrawable(new ColorDrawable(Color.argb(255, 255, 255, 255)));
+//        getWindow().setBackgroundDrawable(new ColorDrawable(Color.argb(1, 255, 255, 255)));
+
+//        setContentView(R.layout.layout_main);
         moveTaskToBack(true);
         getWindow().getDecorView().postDelayed(this::finish, 0);
     }
