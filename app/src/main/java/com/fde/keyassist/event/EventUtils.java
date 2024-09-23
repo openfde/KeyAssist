@@ -13,27 +13,23 @@ import android.view.MotionEvent;
 import android.view.View;
 
 
-
-
-import com.fde.keyassist.R;
 import com.fde.keyassist.util.Constant;
 import com.genymobile.scrcpy.Device;
 
 import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.RejectedExecutionHandler;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 public class EventUtils {
 
+    private static final String TAG = "EventUtils";
+
+
     // 点击事件线程池
-   public static ThreadPoolExecutor tapThreadPoolExecutor = new ThreadPoolExecutor(
-           20,
+    public static ThreadPoolExecutor tapThreadPoolExecutor = new ThreadPoolExecutor(
+            20,
             30,
             60,
             TimeUnit.DAYS,
@@ -56,8 +52,9 @@ public class EventUtils {
             displayId = DEFAULT_DISPLAY;
         }
 //        event.setDisplayId(displayId);
+        Log.d(TAG, "injectMotionEvent: event:" + event);
         Device.injectEvent(event, 0,
-                2);
+                1);
     }
 
     // 连击事件
@@ -88,8 +85,8 @@ public class EventUtils {
 
     }
 
-    public static void diretClick(View view, KeyEvent event, int x, int y, Integer eventType){
-        view.post(()-> DirectionController.getInstance().process(event, x,  y, eventType));
+    public  static void diretClick(View view, KeyEvent event, int x, int y, Integer eventType){
+        view.postDelayed(()-> DirectionController.getInstance().process(event, x,  y, eventType), 0);
     }
 
     public static void zoom(boolean zoomIn, float centerX, float centerY){
@@ -274,15 +271,21 @@ public class EventUtils {
             int direct = updateDirection(action, directBit);
             if(direct == 0) {
                 batchDroped = true;
-                EventUtils.injectMotionEvent(swipeSource, MotionEvent.ACTION_UP,
-                        event.getDownTime(), event.getDownTime(),
-                        center.x, center.y, 1.0f,
-                        0);
+                executor.execute(()->
+                        EventUtils.injectMotionEvent(swipeSource, MotionEvent.ACTION_UP,
+                                event.getDownTime(), event.getEventTime(),
+                                center.x, center.y, 1.0f,
+                                0)
+                );
+//                EventUtils.injectMotionEvent(swipeSource, MotionEvent.ACTION_UP,
+//                        event.getDownTime(), event.getDownTime(),
+//                        center.x, center.y, 1.0f,
+//                        0);
                 isMoving = false;
                 this.mDirection = direct;
             } else {
                 Pointer pointer = computeOffset(direct);
-                executor.execute(()->processInnerOnce(direct, pointer, event.getDownTime(), false));
+                executor.execute(()->processInnerOnce(direct, pointer, event.getDownTime(), event.getEventTime(),false));
             }
         }
 
@@ -329,30 +332,31 @@ public class EventUtils {
             return new Pointer(horizental, vertical);
         }
 
-        private void processInnerOnce(int direct, Pointer pointer, long down, boolean once) {
+        private void processInnerOnce(int direct, Pointer pointer, long down, long eventTime, boolean once) {
             String format = String.format(" direct:%x, pointer:%s", direct, pointer);
             long now = SystemClock.uptimeMillis();
             if(mDirection == 0 &&  direct != 0){
                 batchDroped = false;
-                EventUtils.injectMotionEvent(swipeSource, MotionEvent.ACTION_DOWN, down, down,
+                EventUtils.injectMotionEvent(swipeSource, MotionEvent.ACTION_DOWN, down, eventTime,
                         center.x, center.y, 1.0f,
                         0);
                 isMoving = false;
-                moveOnce(pointer.x, pointer.y);
+                moveOnce(pointer.x, pointer.y, down, now);
             } else if ( !isMoving  || mDirection != direct || once ){
-                moveOnce(pointer.x, pointer.y);
+                moveOnce(pointer.x, pointer.y, down, eventTime);
             }
             this.mDirection = direct;
             long duration = SystemClock.uptimeMillis() - now;
 
         }
 
-        private void moveOnce(float horizental, float vertical) {
+        private void moveOnce(float horizental, float vertical, long down, long eventTime) {
+            Log.d(TAG, "moveOnce():  horizental :" + horizental + ", vertical :" + vertical + "");
             if(batchDroped) {
                 return;
             }
             long now = SystemClock.uptimeMillis();
-            EventUtils.injectMotionEvent(swipeSource, MotionEvent.ACTION_MOVE, now, now,
+            EventUtils.injectMotionEvent(swipeSource, MotionEvent.ACTION_MOVE, down, eventTime,
                     center.x + horizental, center.y + vertical, 1.0f,
                     0);
             isMoving = true;
