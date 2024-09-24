@@ -23,7 +23,7 @@
             android:maxLines="1"
             android:inputType="text"
             android:imeOptions="actionDone"
-            android:enabled="false"
+            android:enabled="true"
             android:cursorVisible="true"
             android:background="@null"
             android:id="@+id/key_mapping_spinner_item_text"
