@@ -5,10 +5,6 @@ import static android.view.Display.INVALID_DISPLAY;
 import static android.view.KeyEvent.ACTION_DOWN;
 
 
-import android.app.Instrumentation;
-import android.app.Service;
-import android.app.UiAutomation;
-import android.content.Context;
 import android.os.SystemClock;
 import android.util.Log;
 import android.view.InputDevice;
@@ -94,6 +90,139 @@ public class EventUtils {
 //                DirectionController.getInstance().process(event, x,  y, eventType);
 //            }
 //        }).start();
+    }
+
+    public static void zoom(boolean zoomIn, float centerX, float centerY){
+        zoom(zoomIn, centerX, centerY, 1f);
+    }
+
+    private static void zoom(boolean zoomIn, float centerX, float centerY, float rate) {
+
+    }
+
+
+    public static class ZoomController {
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        private Pointer center;
+        long downTime, eventTime;
+        private final long PARAM_TIME = 3000; // ms
+        private final float DEFAULT_RATE = 2f; // speed
+        private final float DEFAULT_ZOOMOUT_AREA_SIZE = 80; // finger distance
+        private final float DEFAULT_ZOOMIN_AREA_SIZE = 200; // finger distance
+        MotionEvent.PointerProperties[] properties;
+        MotionEvent.PointerCoords[] coords;
+        int source = 0xd002;
+        int deviceId = 10;
+        private volatile boolean stopped = true;
+        private String TAG = "ZoomController";
+        private boolean zoomIn;
+
+        private static class SingletonHolder {
+            private static final ZoomController INSTANCE = new ZoomController();
+        }
+        public static ZoomController getInstance(){
+            return ZoomController.SingletonHolder.INSTANCE;
+        }
+
+        public ZoomController(){
+        }
+
+        public ZoomController setCenter(Pointer center) {
+            this.center = center;
+            return this;
+        }
+
+        public void startZoomInner(){
+            Log.d(TAG, "startZoomInner():  ");
+            if(!stopped){
+                return;
+            }
+            stopped = false;
+            float x1 = center.x - (zoomIn ? DEFAULT_ZOOMIN_AREA_SIZE : DEFAULT_ZOOMOUT_AREA_SIZE);
+            float y1 = center.y ; //- DEFAULT_AREA_SIZE;
+            float x2 = center.x + (zoomIn ? DEFAULT_ZOOMIN_AREA_SIZE : DEFAULT_ZOOMOUT_AREA_SIZE);
+            float y2 = center.y ; // + DEFAULT_AREA_SIZE;
+            float rate = zoomIn ? DEFAULT_RATE : - DEFAULT_RATE;
+            long downTime = SystemClock.uptimeMillis();
+            long eventTime = SystemClock.uptimeMillis();
+            properties = new MotionEvent.PointerProperties[10];
+            coords = new MotionEvent.PointerCoords[10];
+            properties[0] = new MotionEvent.PointerProperties();
+            properties[0].id = 2;
+            properties[0].toolType = MotionEvent.TOOL_TYPE_FINGER;
+            coords[0] = new MotionEvent.PointerCoords();
+            coords[0].x = x1;
+            coords[0].y = y1;
+            coords[0].pressure = 1;
+            coords[0].size = 1;
+            properties[1] = new MotionEvent.PointerProperties();
+            properties[1].id = 3;
+            properties[1].toolType = MotionEvent.TOOL_TYPE_FINGER;
+            coords[1] = new MotionEvent.PointerCoords();
+            coords[1].x = x2;
+            coords[1].y = y2;
+            coords[1].pressure = 1;
+            coords[1].size = 1;
+            Log.d(TAG, "startZoom():  ");
+            MotionEvent event = MotionEvent.obtain(
+                    downTime, eventTime, MotionEvent.ACTION_DOWN, 1, properties, coords, 0,
+                    0, 1, 1,
+                    deviceId, 0, source, 0);
+            Device.injectEvent(event, 0, 2);
+            eventTime = SystemClock.uptimeMillis();
+            event = MotionEvent.obtain(
+                    downTime, eventTime,
+                    MotionEvent.ACTION_POINTER_DOWN + (1 << MotionEvent.ACTION_POINTER_INDEX_SHIFT),
+                    2,
+                    properties, coords, 0, 0, 1, 1,
+                    deviceId, 0, source, 0);
+            Device.injectEvent(event, 0, 2);
+            while ( (coords[1].x > center.x || !zoomIn) && !stopped){
+                Log.d(TAG, "startZoom():  " + stopped);
+//                coords[0].y += rate; // 第一个触摸点向下移动
+                coords[0].x += rate; // 第一个触摸点向下移动
+//                coords[1].y -= rate; // 第二个触摸点向下移动
+                coords[1].x -= rate; // 第一个触摸点向下移动
+                eventTime = SystemClock.uptimeMillis();
+                event = MotionEvent.obtain(
+                        downTime, eventTime, MotionEvent.ACTION_MOVE, 2,
+                        properties, coords, 0, 0, 1, 1,
+                        deviceId, 0, source, 0);
+                Device.injectEvent(event, 0, 2);
+            }
+        }
+
+        public void startZoom(int repeatCount, boolean zoomIn) {
+            this.zoomIn = zoomIn;
+            if(repeatCount == 0){
+                executor.execute(()->startZoomInner());
+            }
+        }
+
+        public void stopZoom() {
+            stopZoomInner();
+        }
+
+        public void stopZoomInner(){
+            Log.d(TAG, "stopZoom():  ");
+            stopped = true;
+            eventTime = SystemClock.uptimeMillis();
+            MotionEvent event = MotionEvent.obtain(
+                    downTime, eventTime,
+                    MotionEvent.ACTION_POINTER_UP + (1 << MotionEvent.ACTION_POINTER_INDEX_SHIFT),
+                    2,
+                    properties, coords, 0, 0, 1, 1,
+                    deviceId, 0, source, 0);
+
+            Device.injectEvent(event, 0, 2);
+            eventTime = SystemClock.uptimeMillis();
+            event = MotionEvent.obtain(
+                    downTime, eventTime, MotionEvent.ACTION_UP, 1,
+                    properties, coords, 0, 0, 1, 1,
+                    deviceId, 0, source, 0);
+            Device.injectEvent(event, 0, 2);
+        }
+
     }
 
 
@@ -241,25 +370,25 @@ public class EventUtils {
             this.center = center;
         }
 
-        public static class Pointer {
-            public Pointer(float x, float y) {
-                this.x = x;
-                this.y = y;
-            }
-            public Pointer(){
+    }
 
-            }
-            public float x , y;
-
-            @Override
-            public String toString() {
-                return "Pointer{" +
-                        "x=" + x +
-                        ", y=" + y +
-                        '}';
-            }
+    public static class Pointer {
+        public Pointer(float x, float y) {
+            this.x = x;
+            this.y = y;
         }
+        public Pointer(){
 
+        }
+        public float x , y;
+
+        @Override
+        public String toString() {
+            return "Pointer{" +
+                    "x=" + x +
+                    ", y=" + y +
+                    '}';
+        }
     }
 
 }

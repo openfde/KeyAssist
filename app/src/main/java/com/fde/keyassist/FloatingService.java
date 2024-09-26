@@ -4,6 +4,7 @@ package com.fde.keyassist;
 
 import android.annotation.SuppressLint;
 import android.app.Dialog;
+import android.app.Instrumentation;
 import android.app.Service;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -14,6 +15,7 @@ import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
 import android.os.IBinder;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.InputDevice;
 import android.view.KeyEvent;
@@ -51,6 +53,7 @@ import java.util.List;
 
 public class FloatingService extends Service implements View.OnClickListener,AdapterView.OnItemSelectedListener{
 
+    private static final String TAG = "FlatingService";
     private boolean isMainWindow = false; // 是否显示了主界面
     private View mainView;
     private WindowManager.LayoutParams mainParams;
@@ -161,6 +164,17 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
         floatView.setOnKeyListener(new View.OnKeyListener() {
             @Override
             public boolean onKey(View view, int i, KeyEvent keyEvent) {
+//                if(keyEvent.getAction() == KeyEvent.ACTION_DOWN && keyEvent.getKeyCode() == KeyEvent.KEYCODE_F){
+//                    Log.d(TAG, "onKey: down:" + keyEvent);
+//                    EventUtils.ZoomController.getInstance().setCenter(new EventUtils.Pointer(900, 400)).
+//                            startZoom(keyEvent.getRepeatCount(), true);
+//                    return true;
+//                }
+//                if(keyEvent.getAction() == KeyEvent.ACTION_UP && keyEvent.getKeyCode() == KeyEvent.KEYCODE_F){
+//                    Log.d(TAG, "onKey: up:" + keyEvent);
+//                    EventUtils.ZoomController.getInstance().stopZoom();
+//                    return true;
+//                }
                 int[] pos = getPosition(i);
                 if(pos[0] != -1 && pos[1]!=-1) {
                     if (eventType == Constant.TAP_CLICK_EVENT) {
