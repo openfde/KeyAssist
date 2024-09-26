@@ -1,47 +1,61 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:background="#1C1D2F"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:background="@drawable/bg_modify_main"
     android:orientation="vertical"
-    android:layout_marginTop="10dp"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
     <LinearLayout
+        android:id="@+id/key_mapping_apply_linear"
         android:layout_marginTop="10dp"
         android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
-        <TextView
-            android:gravity="center_vertical"
+
+        <Button
+            android:layout_weight="1.5"
+            android:layout_marginLeft="20dp"
+            android:id="@+id/key_mapping_apply_and_cancel"
+            android:gravity="center_vertical|center_horizontal"
             android:layout_gravity="center_vertical"
-            android:textSize="12sp"
-            android:layout_marginLeft="10dp"
+            android:background="@drawable/key_mapping_apply"
             android:textColor="#FFFFFF"
-            android:text="预设按键"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
+            android:text="@string/apply"
+            android:textSize="12sp"
+            android:layout_width="0dp"
+            android:layout_height="30dp"/>
+
         <LinearLayout
+            android:layout_weight="7"
             android:orientation="vertical"
-            android:layout_marginRight="10dp"
-            android:layout_marginLeft="10dp"
+            android:layout_margin="15dp"
             android:background="@drawable/key_mapping_spinner"
-            android:layout_width="160dp"
-            android:layout_height="wrap_content">
+            android:layout_width="0dp"
+            android:layout_height="30dp">
             <LinearLayout
+                android:gravity="center_vertical"
                 android:id="@+id/key_mapping_plan_linear"
                 android:orientation="horizontal"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+                android:layout_height="35dp">
                 <TextView
+                    android:layout_weight="1"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginLeft="10dp"
                     android:id="@+id/key_mapping_plan_text"
                     android:textColor="#FFFFFF"
-                    android:text="默认方案"
+                    android:textSize="14sp"
+                    android:gravity="center_vertical"
+                    android:text="默认"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"/>
+                    android:layout_height="35dp"/>
                 <ImageView
+                    android:layout_marginRight="10dp"
+                    android:layout_gravity="center_vertical"
                     android:id="@+id/key_mapping_spinner_down"
-                    android:layout_marginLeft="85dp"
                     android:src="@drawable/key_mapping_spinner_down"
+                    android:layout_marginLeft="10dp"
                     android:layout_width="20dp"
                     android:layout_height="20dp"/>
             </LinearLayout>
@@ -49,38 +63,43 @@
         </LinearLayout>
 
         <Button
-            android:id="@+id/key_mapping_apply"
+            android:layout_weight="1.5"
+            android:id="@+id/key_mapping_exit"
             android:gravity="center_vertical|center_horizontal"
             android:layout_gravity="center_vertical"
             android:background="@drawable/key_mapping_apply"
+            android:layout_marginRight="20dp"
             android:textColor="#FFFFFF"
-            android:text="应用"
+            android:text="@string/exit"
             android:textSize="12sp"
-            android:layout_width="45dp"
-            android:layout_height="20dp"/>
+            android:layout_width="0dp"
+            android:layout_height="30dp"/>
+
     </LinearLayout>
 
     <LinearLayout
+        android:id="@+id/key_mapping_tip"
+        android:layout_below="@+id/key_mapping_apply_linear"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
         <TextView
-            android:textSize="12sp"
+            android:textSize="14sp"
             android:textColor="#FFFFFF"
-            android:layout_marginLeft="10dp"
-            android:layout_marginTop="5dp"
-            android:text="点击按键添加到对应位置:"
+            android:layout_marginHorizontal="20dp"
+            android:text="@string/hint"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"/>
     </LinearLayout>
 
     <LinearLayout
-        android:layout_marginTop="10dp"
+        android:id="@+id/key_mapping_control_1"
+        android:layout_below="@+id/key_mapping_tip"
+        android:layout_marginTop="20dp"
         android:orientation="horizontal"
         android:layout_width="match_parent"
-        android:layout_height="60dp">
+        android:layout_height="wrap_content">
         <LinearLayout
             android:orientation="vertical"
-            android:gravity="center"
             android:layout_weight="1"
             android:layout_width="0dp"
             android:layout_height="match_parent">
@@ -96,15 +115,15 @@
                 android:gravity="center_horizontal"
                 android:textColor="#FFFFFF"
                 android:layout_gravity="center"
-                android:textSize="8sp"
-                android:text="普通点击"
+                android:textSize="@dimen/control_button_text_size"
+                android:text="@string/tap_click"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"/>
+                android:layout_height="wrap_content"
+                tools:ignore="SmallSp" />
         </LinearLayout>
 
         <LinearLayout
             android:orientation="vertical"
-            android:gravity="center"
             android:layout_weight="1"
             android:layout_width="0dp"
             android:layout_height="match_parent">
@@ -120,19 +139,102 @@
                 android:gravity="center_horizontal"
                 android:textColor="#FFFFFF"
                 android:layout_gravity="center"
-                android:textSize="8sp"
-                android:text="十字键"
+                android:textSize="@dimen/control_button_text_size"
+                android:text="@string/direct_key"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"/>
         </LinearLayout>
 
         <LinearLayout
             android:orientation="vertical"
-            android:gravity="center"
             android:layout_weight="1"
             android:layout_width="0dp"
             android:layout_height="match_parent">
             <ImageView
+                android:id="@+id/key_mapping_double_click"
+                android:layout_gravity="center"
+                android:background="@drawable/key_mapping_key_background"
+                android:src="@drawable/key_mapping_double_click"
+                android:layout_width="30dp"
+                android:layout_height="30dp"/>
+            <TextView
+                android:layout_marginTop="5dp"
+                android:gravity="center_horizontal"
+                android:textColor="#FFFFFF"
+                android:layout_gravity="center"
+                android:textSize="@dimen/control_button_text_size"
+                android:text="@string/double_click"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
+        </LinearLayout>
+
+
+
+
+    </LinearLayout>
+
+
+    <LinearLayout
+        android:layout_marginTop="30dp"
+        android:id="@+id/key_mapping_control_2"
+        android:layout_below="@+id/key_mapping_control_1"
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_weight="1"
+            android:layout_width="0dp"
+            android:layout_height="match_parent">
+            <ImageView
+                android:id="@+id/key_mapping_scale"
+                android:layout_gravity="center"
+                android:background="@drawable/key_mapping_key_background"
+                android:src="@drawable/scale"
+                android:layout_width="30dp"
+                android:layout_height="30dp"/>
+            <TextView
+                android:layout_marginTop="5dp"
+                android:gravity="center_horizontal"
+                android:textColor="#FFFFFF"
+                android:layout_gravity="center"
+                android:textSize="@dimen/control_button_text_size"
+                android:text="@string/zoom_in"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_weight="1"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content">
+            <ImageView
+                android:id="@+id/key_mapping_amplify"
+                android:layout_gravity="center"
+                android:background="@drawable/key_mapping_key_background"
+                android:src="@drawable/key_mapping_amplify"
+                android:layout_width="30dp"
+                android:layout_height="30dp"/>
+            <TextView
+                android:layout_marginTop="5dp"
+                android:gravity="center_horizontal"
+                android:textColor="#FFFFFF"
+                android:layout_gravity="center"
+                android:textSize="@dimen/control_button_text_size"
+                android:text="@string/zoom_out"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_weight="1"
+            android:layout_width="0dp"
+            android:layout_height="match_parent">
+            <ImageView
+                android:id="@+id/key_mapping_open_cursor"
                 android:layout_gravity="center"
                 android:background="@drawable/key_mapping_key_background"
                 android:src="@drawable/key_mapping_left_mouse"
@@ -143,52 +245,33 @@
                 android:gravity="center_horizontal"
                 android:textColor="#FFFFFF"
                 android:layout_gravity="center"
-                android:textSize="8sp"
-                android:text="鼠标左键"
+                android:textSize="@dimen/control_button_text_size"
+                android:text="@string/enable_mouse"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"/>
         </LinearLayout>
 
-        <LinearLayout
-            android:orientation="vertical"
-            android:gravity="center"
-            android:layout_weight="1"
-            android:layout_width="0dp"
-            android:layout_height="match_parent">
-            <ImageView
-                android:layout_gravity="center"
-                android:background="@drawable/key_mapping_key_background"
-                android:src="@drawable/key_mapping_right_mouse"
-                android:layout_width="30dp"
-                android:layout_height="30dp"/>
-            <TextView
-                android:layout_marginTop="5dp"
-                android:gravity="center_horizontal"
-                android:textColor="#FFFFFF"
-                android:layout_gravity="center"
-                android:textSize="8sp"
-                android:text="鼠标右键"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"/>
-        </LinearLayout>
 
     </LinearLayout>
 
     <LinearLayout
-        android:layout_marginTop="10dp"
+        android:layout_marginTop="30dp"
+        android:layout_below="@+id/key_mapping_control_2"
         android:orientation="horizontal"
         android:layout_width="match_parent"
-        android:layout_height="60dp">
+        android:layout_height="wrap_content">
+
         <LinearLayout
             android:orientation="vertical"
-            android:gravity="center"
             android:layout_weight="1"
             android:layout_width="0dp"
             android:layout_height="match_parent">
             <ImageView
+                android:id="@+id/key_mapping_close_dialog"
                 android:layout_gravity="center"
                 android:background="@drawable/key_mapping_key_background"
-                android:src="@drawable/key_mapping_num_click"
+                android:contentDescription="TODO"
+                android:src="@drawable/dialog"
                 android:layout_width="30dp"
                 android:layout_height="30dp"/>
             <TextView
@@ -196,302 +279,40 @@
                 android:gravity="center_horizontal"
                 android:textColor="#FFFFFF"
                 android:layout_gravity="center"
-                android:textSize="8sp"
-                android:text="连击"
+                android:textSize="@dimen/control_button_text_size"
+                android:text="@string/dialog"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"/>
         </LinearLayout>
 
-        <LinearLayout
-            android:orientation="vertical"
-            android:gravity="center"
-            android:layout_weight="1"
-            android:layout_width="0dp"
-            android:layout_height="match_parent">
-            <ImageView
-                android:layout_gravity="center"
-                android:background="@drawable/key_mapping_key_background"
-                android:src="@drawable/key_mapping_tap_click"
-                android:layout_width="30dp"
-                android:layout_height="30dp"/>
-            <TextView
-                android:layout_marginTop="5dp"
-                android:gravity="center_horizontal"
-                android:textColor="#FFFFFF"
-                android:layout_gravity="center"
-                android:textSize="8sp"
-                android:text="普通点击"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"/>
-        </LinearLayout>
 
-        <LinearLayout
-            android:orientation="vertical"
-            android:gravity="center"
-            android:layout_weight="1"
-            android:layout_width="0dp"
-            android:layout_height="match_parent">
-            <ImageView
-                android:layout_gravity="center"
-                android:background="@drawable/key_mapping_key_background"
-                android:src="@drawable/key_mapping_tap_click"
-                android:layout_width="30dp"
-                android:layout_height="30dp"/>
-            <TextView
-                android:layout_marginTop="5dp"
-                android:gravity="center_horizontal"
-                android:textColor="#FFFFFF"
-                android:layout_gravity="center"
-                android:textSize="8sp"
-                android:text="普通点击"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"/>
-        </LinearLayout>
-
-        <LinearLayout
-            android:orientation="vertical"
-            android:gravity="center"
-            android:layout_weight="1"
-            android:layout_width="0dp"
-            android:layout_height="match_parent">
-            <ImageView
-                android:layout_gravity="center"
-                android:background="@drawable/key_mapping_key_background"
-                android:src="@drawable/key_mapping_tap_click"
-                android:layout_width="30dp"
-                android:layout_height="30dp"/>
-            <TextView
-                android:layout_marginTop="5dp"
-                android:gravity="center_horizontal"
-                android:textColor="#FFFFFF"
-                android:layout_gravity="center"
-                android:textSize="8sp"
-                android:text="普通点击"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"/>
-        </LinearLayout>
 
     </LinearLayout>
 
-    <LinearLayout
-        android:layout_marginTop="10dp"
-        android:orientation="horizontal"
-        android:layout_width="match_parent"
-        android:layout_height="60dp">
-        <LinearLayout
-            android:orientation="vertical"
-            android:gravity="center"
-            android:layout_weight="1"
-            android:layout_width="0dp"
-            android:layout_height="match_parent">
-            <ImageView
-                android:layout_gravity="center"
-                android:background="@drawable/key_mapping_key_background"
-                android:src="@drawable/key_mapping_tap_click"
-                android:layout_width="30dp"
-                android:layout_height="30dp"/>
-            <TextView
-                android:layout_marginTop="5dp"
-                android:gravity="center_horizontal"
-                android:textColor="#FFFFFF"
-                android:layout_gravity="center"
-                android:textSize="8sp"
-                android:text="普通点击"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"/>
-        </LinearLayout>
 
-        <LinearLayout
-            android:orientation="vertical"
-            android:gravity="center"
-            android:layout_weight="1"
-            android:layout_width="0dp"
-            android:layout_height="match_parent">
-            <ImageView
-                android:layout_gravity="center"
-                android:background="@drawable/key_mapping_key_background"
-                android:src="@drawable/key_mapping_tap_click"
-                android:layout_width="30dp"
-                android:layout_height="30dp"/>
-            <TextView
-                android:layout_marginTop="5dp"
-                android:gravity="center_horizontal"
-                android:textColor="#FFFFFF"
-                android:layout_gravity="center"
-                android:textSize="8sp"
-                android:text="普通点击"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"/>
-        </LinearLayout>
-
-        <LinearLayout
-            android:orientation="vertical"
-            android:gravity="center"
-            android:layout_weight="1"
-            android:layout_width="0dp"
-            android:layout_height="match_parent">
-            <ImageView
-                android:layout_gravity="center"
-                android:background="@drawable/key_mapping_key_background"
-                android:src="@drawable/key_mapping_tap_click"
-                android:layout_width="30dp"
-                android:layout_height="30dp"/>
-            <TextView
-                android:layout_marginTop="5dp"
-                android:gravity="center_horizontal"
-                android:textColor="#FFFFFF"
-                android:layout_gravity="center"
-                android:textSize="8sp"
-                android:text="普通点击"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"/>
-        </LinearLayout>
-
-        <LinearLayout
-            android:orientation="vertical"
-            android:gravity="center"
-            android:layout_weight="1"
-            android:layout_width="0dp"
-            android:layout_height="match_parent">
-            <ImageView
-                android:layout_gravity="center"
-                android:background="@drawable/key_mapping_key_background"
-                android:src="@drawable/key_mapping_tap_click"
-                android:layout_width="30dp"
-                android:layout_height="30dp"/>
-            <TextView
-                android:layout_marginTop="5dp"
-                android:gravity="center_horizontal"
-                android:textColor="#FFFFFF"
-                android:layout_gravity="center"
-                android:textSize="8sp"
-                android:text="普通点击"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"/>
-        </LinearLayout>
-
-    </LinearLayout>
 
     <LinearLayout
-        android:layout_marginTop="10dp"
-        android:orientation="horizontal"
-        android:layout_width="match_parent"
-        android:layout_height="60dp">
-        <LinearLayout
-            android:orientation="vertical"
-            android:gravity="center"
-            android:layout_weight="1"
-            android:layout_width="0dp"
-            android:layout_height="match_parent">
-            <ImageView
-                android:layout_gravity="center"
-                android:background="@drawable/key_mapping_key_background"
-                android:src="@drawable/key_mapping_tap_click"
-                android:layout_width="30dp"
-                android:layout_height="30dp"/>
-            <TextView
-                android:layout_marginTop="5dp"
-                android:gravity="center_horizontal"
-                android:textColor="#FFFFFF"
-                android:layout_gravity="center"
-                android:textSize="8sp"
-                android:text="普通点击"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"/>
-        </LinearLayout>
-
-        <LinearLayout
-            android:orientation="vertical"
-            android:gravity="center"
-            android:layout_weight="1"
-            android:layout_width="0dp"
-            android:layout_height="match_parent">
-            <ImageView
-                android:layout_gravity="center"
-                android:background="@drawable/key_mapping_key_background"
-                android:src="@drawable/key_mapping_tap_click"
-                android:layout_width="30dp"
-                android:layout_height="30dp"/>
-            <TextView
-                android:layout_marginTop="5dp"
-                android:gravity="center_horizontal"
-                android:textColor="#FFFFFF"
-                android:layout_gravity="center"
-                android:textSize="8sp"
-                android:text="普通点击"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"/>
-        </LinearLayout>
-
-        <LinearLayout
-            android:orientation="vertical"
-            android:gravity="center"
-            android:layout_weight="1"
-            android:layout_width="0dp"
-            android:layout_height="match_parent">
-            <ImageView
-                android:layout_gravity="center"
-                android:background="@drawable/key_mapping_key_background"
-                android:src="@drawable/key_mapping_tap_click"
-                android:layout_width="30dp"
-                android:layout_height="30dp"/>
-            <TextView
-                android:layout_marginTop="5dp"
-                android:gravity="center_horizontal"
-                android:textColor="#FFFFFF"
-                android:layout_gravity="center"
-                android:textSize="8sp"
-                android:text="普通点击"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"/>
-        </LinearLayout>
-
-        <LinearLayout
-            android:orientation="vertical"
-            android:gravity="center"
-            android:layout_weight="1"
-            android:layout_width="0dp"
-            android:layout_height="match_parent">
-            <ImageView
-                android:layout_gravity="center"
-                android:background="@drawable/key_mapping_key_background"
-                android:src="@drawable/key_mapping_tap_click"
-                android:layout_width="30dp"
-                android:layout_height="30dp"/>
-            <TextView
-                android:layout_marginTop="5dp"
-                android:gravity="center_horizontal"
-                android:textColor="#FFFFFF"
-                android:layout_gravity="center"
-                android:textSize="8sp"
-                android:text="普通点击"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"/>
-        </LinearLayout>
-
-    </LinearLayout>
-
-    <LinearLayout
+        android:layout_alignParentBottom="true"
         android:padding="10dp"
-        android:layout_marginTop="20dp"
+        android:layout_margin="10dp"
         android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
         <Button
-            android:id="@+id/key_mapping_cancel"
+            android:id="@+id/key_mapping_edit_cancel"
             android:background="@drawable/key_mapping_cancel"
             android:layout_weight="1"
-            android:text="编辑"
+            android:text="@string/edit"
             android:layout_width="0dp"
             android:layout_height="30dp"/>
         <Button
-            android:id="@+id/key_mapping_save"
-            android:layout_marginLeft="10dp"
+            android:id="@+id/key_mapping_hide_save"
+            android:layout_marginLeft="20dp"
             android:background="@drawable/key_mapping_cancel"
             android:layout_weight="1"
-            android:text="退出"
+            android:text="@string/hide"
             android:layout_width="0dp"
             android:layout_height="30dp"/>
     </LinearLayout>
 
-</LinearLayout>
+</RelativeLayout>

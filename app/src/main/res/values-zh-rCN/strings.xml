@@ -1,0 +1,24 @@
+<resources>
+    <string name="app_name">KeyAssist</string>
+    <string name="tap_click">单击</string>
+    <string name="double_click">连击</string>
+    <string name="swipe">滑动</string>
+    <string name="direct_key">十字键</string>
+    <string name="zoom_out">放大</string>
+    <string name="zoom_in">缩小</string>
+    <string name="enable_mouse">打开鼠标</string>
+    <string name="edit">编辑</string>
+    <string name="hide">隐藏</string>
+    <string name="hint">添加按钮到相应的位置</string>
+    <string name="apply">应用</string>
+    <string name="exit">退出</string>
+    <string name="cancel">取消</string>
+    <string name="save">保存</string>
+    <string name="direct_hint">请输入按键</string>
+    <string name="tap_hint">请输入按键</string>
+    <string name="scale_hint">请输入按键</string>
+    <string name="double_hint">请输入按键</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="dialog">隐藏任务栏</string>
+</resources>

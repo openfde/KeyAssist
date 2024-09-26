@@ -1,0 +1,113 @@
+[
+  [
+    {
+      "combination": false,
+      "combinationKeyCode": 0,
+      "eventType": 1,
+      "id": 31,
+      "keyValue": "1",
+      "keycode": 1,
+      "planId": 4,
+      "x": 890,
+      "y": 804,
+      "baseObjId": 31
+    },
+    {
+      "combination": false,
+      "combinationKeyCode": 0,
+      "eventType": 1,
+      "id": 32,
+      "keyValue": "2",
+      "keycode": 2,
+      "planId": 4,
+      "x": 975,
+      "y": 808,
+      "baseObjId": 32
+    },
+    {
+      "combination": false,
+      "combinationKeyCode": 0,
+      "eventType": 1,
+      "id": 33,
+      "keyValue": "3",
+      "keycode": 3,
+      "planId": 4,
+      "x": 1059,
+      "y": 808,
+      "baseObjId": 33
+    },
+    {
+      "combination": false,
+      "combinationKeyCode": 0,
+      "eventType": 1,
+      "id": 34,
+      "keyValue": "Q",
+      "keycode": 45,
+      "planId": 4,
+      "x": 1159,
+      "y": 797,
+      "baseObjId": 34
+    },
+    {
+      "combination": false,
+      "combinationKeyCode": 0,
+      "eventType": 1,
+      "id": 35,
+      "keyValue": "E",
+      "keycode": 33,
+      "planId": 4,
+      "x": 1228,
+      "y": 680,
+      "baseObjId": 35
+    },
+    {
+      "combination": false,
+      "combinationKeyCode": 0,
+      "eventType": 1,
+      "id": 36,
+      "keyValue": "R",
+      "keycode": 46,
+      "planId": 4,
+      "x": 1342,
+      "y": 613,
+      "baseObjId": 36
+    }
+  ],
+  [
+    {
+      "downCombination": false,
+      "downCombinationKeyCode": 0,
+      "downKeyValue": "S",
+      "downKeycode": 47,
+      "eventType": 4,
+      "id": 6,
+      "leftCombination": false,
+      "leftCombinationKeyCode": 0,
+      "leftKeyValue": "A",
+      "leftKeycode": 29,
+      "planId": 4,
+      "rightCombination": false,
+      "rightCombinationKeyCode": 0,
+      "rightKeyValue": "D",
+      "rightKeycode": 32,
+      "upCombination": false,
+      "upCombinationKeyCode": 0,
+      "upKeyValue": "W",
+      "upKeycode": 51,
+      "x": 494,
+      "y": 727,
+      "baseObjId": 6
+    }
+  ],
+  [],
+  [
+    {
+      "cursorSwitch": true,
+      "id": 6,
+      "planId": 4,
+      "baseObjId": 6
+    }
+  ],
+  [],
+  []
+]
