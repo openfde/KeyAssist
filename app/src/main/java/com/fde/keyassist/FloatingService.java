@@ -136,6 +136,7 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
 
     private LinearLayout key_mapping_plan_linear;
 
+
     private TextView key_mapping_plan_text;
 
     public static PopupWindow popupWindow;
@@ -283,7 +284,9 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
             @Override
             public boolean onKey(View view, int i, KeyEvent keyEvent) {
                 int[] pos = getPosition(i,String.valueOf(keyEvent.getDisplayLabel()));
+                Log.d(TAG, "onKey():  eventType :" + Constant.toEventString(eventType) + ", i :" + i + ", keyEvent :" + keyEvent + "");
                 if(pos[0] != -1 && pos[1]!=-1) {
+
                     if (eventType == Constant.TAP_CLICK_EVENT) {
                         EventUtils.tapClick(pos[0], pos[1]);
                     } else if (eventType == Constant.DIRECTION_KEY_UP

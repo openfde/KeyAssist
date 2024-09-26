@@ -12,4 +12,26 @@ public class Constant {
     public static final Integer SCALE = 9;
     public static final Integer AMPLIFY = 10;
     public static String planName = "王者荣耀";
+
+    public static String toEventString(int eventType){
+        switch(eventType) {
+            case 1:
+                return "单击事件";
+            case 2:
+                return "双击事件";
+            case 3:
+                return "滑动";
+            case 4:
+                return "方向键";
+            case 5:
+                return "方向键上";
+            case 6:
+                return "方向键下";
+            case 7:
+                return "方向键左";
+            case 8:
+                return "方向键右";
+        }
+        return null;
+    }
 }
