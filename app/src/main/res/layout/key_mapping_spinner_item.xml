@@ -9,7 +9,7 @@
 
         android:layout_gravity="center_vertical"
         android:layout_weight="9"
-        android:paddingTop="10dp"
+        android:paddingTop="15dp"
         android:orientation="horizontal"
         android:layout_width="0dp"
         android:layout_height="match_parent">
@@ -17,6 +17,7 @@
             android:layout_marginLeft="10dp"
             android:id="@+id/key_mapping_spinner_item_choose"
             android:src="@drawable/key_mapping_spinner_item_choose"
+            android:layout_gravity="center"
             android:layout_width="15dp"
             android:layout_height="15dp"/>
         <EditText
@@ -28,9 +29,10 @@
             android:background="@null"
             android:layout_marginLeft="10dp"
             android:id="@+id/key_mapping_spinner_item_text"
+            android:layout_gravity="center"
             android:textColor="#FFFFFF"
             android:text="预设按键"
-            android:textSize="12sp"
+            android:textSize="13sp"
             android:layout_width="50dp"
             android:layout_height="wrap_content">
         </EditText>
@@ -41,9 +43,11 @@
             android:id="@+id/key_mapping_spinner_item_edit"
             android:src="@drawable/key_mapping_spinner_item_edit"
             android:layout_width="15dp"
+            android:layout_gravity="center"
             android:layout_height="15dp"/>
         <ImageView
             android:layout_marginLeft="15dp"
+            android:layout_gravity="center"
             android:id="@+id/key_mapping_spinner_item_delete"
             android:src="@drawable/key_mapping_spinner_item_delete"
             android:layout_width="15dp"
