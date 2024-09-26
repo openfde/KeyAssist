@@ -29,6 +29,6 @@
         5. 点击取消不会保存按键 \n
         6. 点击保存会保存所有按键到对应的方案中 \n
     </string>
-    <string name="dialog">turn on the status bar</string>
+    <string name="dialog">turn off the status bar</string>
 
 </resources>
