@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:background="@drawable/bg_modify_main"
     android:orientation="vertical"
@@ -7,6 +7,7 @@
     android:layout_height="match_parent">
 
     <LinearLayout
+        android:id="@+id/key_mapping_apply_linear"
         android:layout_marginTop="10dp"
         android:orientation="horizontal"
         android:layout_width="match_parent"
@@ -70,6 +71,8 @@
     </LinearLayout>
 
     <LinearLayout
+        android:id="@+id/key_mapping_tip"
+        android:layout_below="@+id/key_mapping_apply_linear"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
         <TextView
@@ -82,11 +85,12 @@
     </LinearLayout>
 
     <LinearLayout
-        android:layout_weight="1"
+        android:id="@+id/key_mapping_control_1"
+        android:layout_below="@+id/key_mapping_tip"
         android:layout_marginTop="20dp"
         android:orientation="horizontal"
         android:layout_width="match_parent"
-        android:layout_height="0dp">
+        android:layout_height="wrap_content">
         <LinearLayout
             android:orientation="vertical"
             android:layout_weight="1"
@@ -104,7 +108,7 @@
                 android:gravity="center_horizontal"
                 android:textColor="#FFFFFF"
                 android:layout_gravity="center"
-                android:textSize="8sp"
+                android:textSize="@dimen/control_button_text_size"
                 android:text="@string/tap_click"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -128,7 +132,7 @@
                 android:gravity="center_horizontal"
                 android:textColor="#FFFFFF"
                 android:layout_gravity="center"
-                android:textSize="8sp"
+                android:textSize="@dimen/control_button_text_size"
                 android:text="@string/direct_key"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"/>
@@ -151,7 +155,7 @@
                 android:gravity="center_horizontal"
                 android:textColor="#FFFFFF"
                 android:layout_gravity="center"
-                android:textSize="8sp"
+                android:textSize="@dimen/control_button_text_size"
                 android:text="@string/double_click"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"/>
@@ -174,7 +178,7 @@
                 android:gravity="center_horizontal"
                 android:textColor="#FFFFFF"
                 android:layout_gravity="center"
-                android:textSize="8sp"
+                android:textSize="@dimen/control_button_text_size"
                 android:text="@string/zoom_in"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"/>
@@ -185,17 +189,18 @@
 
 
     <LinearLayout
-        android:layout_weight="1"
         android:layout_marginTop="30dp"
+        android:id="@+id/key_mapping_control_2"
+        android:layout_below="@+id/key_mapping_control_1"
         android:orientation="horizontal"
         android:layout_width="match_parent"
-        android:layout_height="0dp">
+        android:layout_height="wrap_content">
 
         <LinearLayout
             android:orientation="vertical"
             android:layout_weight="1"
             android:layout_width="0dp"
-            android:layout_height="match_parent">
+            android:layout_height="wrap_content">
             <ImageView
                 android:id="@+id/key_mapping_amplify"
                 android:layout_gravity="center"
@@ -208,7 +213,7 @@
                 android:gravity="center_horizontal"
                 android:textColor="#FFFFFF"
                 android:layout_gravity="center"
-                android:textSize="8sp"
+                android:textSize="@dimen/control_button_text_size"
                 android:text="@string/zoom_out"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"/>
@@ -231,7 +236,7 @@
                 android:gravity="center_horizontal"
                 android:textColor="#FFFFFF"
                 android:layout_gravity="center"
-                android:textSize="8sp"
+                android:textSize="@dimen/control_button_text_size"
                 android:text="@string/enable_mouse"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"/>
@@ -243,13 +248,9 @@
     </LinearLayout>
 
 
-    <LinearLayout
-        android:layout_weight="3"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"/>
-
 
     <LinearLayout
+        android:layout_alignParentBottom="true"
         android:padding="10dp"
         android:layout_margin="10dp"
         android:orientation="horizontal"
@@ -272,4 +273,4 @@
             android:layout_height="30dp"/>
     </LinearLayout>
 
-</LinearLayout>
+</RelativeLayout>
