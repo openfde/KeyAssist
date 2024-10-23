@@ -10,4 +10,13 @@
         <item name="android:backgroundDimEnabled">true</item><!--模糊-->
     </style>
 
+    <style name="NoTitleBar" parent="@android:style/Theme.Light.NoTitleBar">
+    </style>
+
+    <!-- styles.xml -->
+    <style name="CustomNumberPicker" parent="Theme.AppCompat.Light">
+        <item name="android:textColorPrimary">@android:color/holo_blue_dark</item>
+        <item name="android:textSize">6sp</item>
+    </style>
+
 </resources>

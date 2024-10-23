@@ -5,10 +5,6 @@ import static android.view.Display.INVALID_DISPLAY;
 import static android.view.KeyEvent.ACTION_DOWN;
 
 
-import android.app.Instrumentation;
-import android.app.Service;
-import android.app.UiAutomation;
-import android.content.Context;
 import android.os.SystemClock;
 import android.util.Log;
 import android.view.InputDevice;
@@ -17,16 +13,29 @@ import android.view.MotionEvent;
 import android.view.View;
 
 
-
-import com.fde.keyassist.R;
 import com.fde.keyassist.util.Constant;
 import com.genymobile.scrcpy.Device;
 
+import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 public class EventUtils {
 
+    private static final String TAG = "EventUtils";
+
+
+    // 点击事件线程池
+    public static ThreadPoolExecutor tapThreadPoolExecutor = new ThreadPoolExecutor(
+            20,
+            30,
+            60,
+            TimeUnit.DAYS,
+            new ArrayBlockingQueue<>(10),
+            Executors.defaultThreadFactory(),
+            new ThreadPoolExecutor.AbortPolicy());
 
     public static void injectMotionEvent(int inputSource, int action, long downTime, long when,
                                          float x, float y, float pressure, int displayId) {
@@ -43,13 +52,27 @@ public class EventUtils {
             displayId = DEFAULT_DISPLAY;
         }
 //        event.setDisplayId(displayId);
+        Log.d(TAG, "injectMotionEvent: event:" + event);
         Device.injectEvent(event, 0,
-                2);
+                1);
+    }
+
+    // 连击事件
+    public static void doubleClick(int x,int y,int count){
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                for(int i=0;i<count;i++){
+                    tapClick(x,y);
+                }
+            }
+        }).start();
     }
 
     // 点击事件
     public static void tapClick(int x, int y) {
-        new Thread(new Runnable() {
+
+        tapThreadPoolExecutor.execute(new Runnable() {
             @Override
             public void run() {
                 long now = SystemClock.uptimeMillis();
@@ -57,26 +80,146 @@ public class EventUtils {
                         0);
                 injectMotionEvent(InputDevice.SOURCE_TOUCHSCREEN, MotionEvent.ACTION_UP, now, now, x, y, 0.0f, 0);
             }
-        }).start();
-
-
-        // 发送按下事件
-        // 获取屏幕的中心坐标
-        // 创建并发送MotionEvent
-
-
+        });
 
 
     }
 
-    public static void diretClick(View view, KeyEvent event, int x, int y, Integer eventType){
-        view.post(()-> DirectionController.getInstance().process(event, x,  y, eventType));
-//        new Thread(new Runnable() {
-//            @Override
-//            public void run() {
-//                DirectionController.getInstance().process(event, x,  y, eventType);
-//            }
-//        }).start();
+    public  static void diretClick(View view, KeyEvent event, int x, int y, Integer eventType){
+        view.postDelayed(()-> DirectionController.getInstance().process(event, x,  y, eventType), 0);
+    }
+
+    public static void zoom(boolean zoomIn, float centerX, float centerY){
+        zoom(zoomIn, centerX, centerY, 1f);
+    }
+
+    private static void zoom(boolean zoomIn, float centerX, float centerY, float rate) {
+
+    }
+
+
+    public static class ZoomController {
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        private Pointer center;
+        long downTime, eventTime;
+        private final long PARAM_TIME = 3000; // ms
+        private final float DEFAULT_RATE = 2f; // speed
+        private final float DEFAULT_ZOOMOUT_AREA_SIZE = 80; // finger distance
+        private final float DEFAULT_ZOOMIN_AREA_SIZE = 200; // finger distance
+        MotionEvent.PointerProperties[] properties;
+        MotionEvent.PointerCoords[] coords;
+        int source = 0xd002;
+        int deviceId = 10;
+        private volatile boolean stopped = true;
+        private String TAG = "ZoomController";
+        private boolean zoomIn;
+
+        private static class SingletonHolder {
+            private static final ZoomController INSTANCE = new ZoomController();
+        }
+        public static ZoomController getInstance(){
+            return ZoomController.SingletonHolder.INSTANCE;
+        }
+
+        public ZoomController(){
+        }
+
+        public ZoomController setCenter(Pointer center) {
+            this.center = center;
+            return this;
+        }
+
+        public void startZoomInner(){
+            Log.d(TAG, "startZoomInner():  ");
+            if(!stopped){
+                return;
+            }
+            stopped = false;
+            float x1 = center.x - (zoomIn ? DEFAULT_ZOOMIN_AREA_SIZE : DEFAULT_ZOOMOUT_AREA_SIZE);
+            float y1 = center.y ; //- DEFAULT_AREA_SIZE;
+            float x2 = center.x + (zoomIn ? DEFAULT_ZOOMIN_AREA_SIZE : DEFAULT_ZOOMOUT_AREA_SIZE);
+            float y2 = center.y ; // + DEFAULT_AREA_SIZE;
+            float rate = zoomIn ? DEFAULT_RATE : - DEFAULT_RATE;
+            long downTime = SystemClock.uptimeMillis();
+            long eventTime = SystemClock.uptimeMillis();
+            properties = new MotionEvent.PointerProperties[10];
+            coords = new MotionEvent.PointerCoords[10];
+            properties[0] = new MotionEvent.PointerProperties();
+            properties[0].id = 2;
+            properties[0].toolType = MotionEvent.TOOL_TYPE_FINGER;
+            coords[0] = new MotionEvent.PointerCoords();
+            coords[0].x = x1;
+            coords[0].y = y1;
+            coords[0].pressure = 1;
+            coords[0].size = 1;
+            properties[1] = new MotionEvent.PointerProperties();
+            properties[1].id = 3;
+            properties[1].toolType = MotionEvent.TOOL_TYPE_FINGER;
+            coords[1] = new MotionEvent.PointerCoords();
+            coords[1].x = x2;
+            coords[1].y = y2;
+            coords[1].pressure = 1;
+            coords[1].size = 1;
+            Log.d(TAG, "startZoom():  ");
+            MotionEvent event = MotionEvent.obtain(
+                    downTime, eventTime, MotionEvent.ACTION_DOWN, 1, properties, coords, 0,
+                    0, 1, 1,
+                    deviceId, 0, source, 0);
+            Device.injectEvent(event, 0, 2);
+            eventTime = SystemClock.uptimeMillis();
+            event = MotionEvent.obtain(
+                    downTime, eventTime,
+                    MotionEvent.ACTION_POINTER_DOWN + (1 << MotionEvent.ACTION_POINTER_INDEX_SHIFT),
+                    2,
+                    properties, coords, 0, 0, 1, 1,
+                    deviceId, 0, source, 0);
+            Device.injectEvent(event, 0, 2);
+            while ( (coords[1].x > center.x || !zoomIn) && !stopped){
+                Log.d(TAG, "startZoom():  " + stopped);
+//                coords[0].y += rate; // 第一个触摸点向下移动
+                coords[0].x += rate; // 第一个触摸点向下移动
+//                coords[1].y -= rate; // 第二个触摸点向下移动
+                coords[1].x -= rate; // 第一个触摸点向下移动
+                eventTime = SystemClock.uptimeMillis();
+                event = MotionEvent.obtain(
+                        downTime, eventTime, MotionEvent.ACTION_MOVE, 2,
+                        properties, coords, 0, 0, 1, 1,
+                        deviceId, 0, source, 0);
+                Device.injectEvent(event, 0, 2);
+            }
+        }
+
+        public void startZoom(int repeatCount, boolean zoomIn) {
+            this.zoomIn = zoomIn;
+            if(repeatCount == 0){
+                executor.execute(()->startZoomInner());
+            }
+        }
+
+        public void stopZoom() {
+            stopZoomInner();
+        }
+
+        public void stopZoomInner(){
+            Log.d(TAG, "stopZoom():  ");
+            stopped = true;
+            eventTime = SystemClock.uptimeMillis();
+            MotionEvent event = MotionEvent.obtain(
+                    downTime, eventTime,
+                    MotionEvent.ACTION_POINTER_UP + (1 << MotionEvent.ACTION_POINTER_INDEX_SHIFT),
+                    2,
+                    properties, coords, 0, 0, 1, 1,
+                    deviceId, 0, source, 0);
+
+            Device.injectEvent(event, 0, 2);
+            eventTime = SystemClock.uptimeMillis();
+            event = MotionEvent.obtain(
+                    downTime, eventTime, MotionEvent.ACTION_UP, 1,
+                    properties, coords, 0, 0, 1, 1,
+                    deviceId, 0, source, 0);
+            Device.injectEvent(event, 0, 2);
+        }
+
     }
 
 
@@ -128,15 +271,21 @@ public class EventUtils {
             int direct = updateDirection(action, directBit);
             if(direct == 0) {
                 batchDroped = true;
-                EventUtils.injectMotionEvent(swipeSource, MotionEvent.ACTION_UP,
-                        event.getDownTime(), event.getDownTime(),
-                        center.x, center.y, 1.0f,
-                        0);
+                executor.execute(()->
+                        EventUtils.injectMotionEvent(swipeSource, MotionEvent.ACTION_UP,
+                                event.getDownTime(), event.getEventTime(),
+                                center.x, center.y, 1.0f,
+                                0)
+                );
+//                EventUtils.injectMotionEvent(swipeSource, MotionEvent.ACTION_UP,
+//                        event.getDownTime(), event.getDownTime(),
+//                        center.x, center.y, 1.0f,
+//                        0);
                 isMoving = false;
                 this.mDirection = direct;
             } else {
                 Pointer pointer = computeOffset(direct);
-                executor.execute(()->processInnerOnce(direct, pointer, event.getDownTime(), false));
+                executor.execute(()->processInnerOnce(direct, pointer, event.getDownTime(), event.getEventTime(),false));
             }
         }
 
@@ -183,30 +332,31 @@ public class EventUtils {
             return new Pointer(horizental, vertical);
         }
 
-        private void processInnerOnce(int direct, Pointer pointer, long down, boolean once) {
+        private void processInnerOnce(int direct, Pointer pointer, long down, long eventTime, boolean once) {
             String format = String.format(" direct:%x, pointer:%s", direct, pointer);
             long now = SystemClock.uptimeMillis();
             if(mDirection == 0 &&  direct != 0){
                 batchDroped = false;
-                EventUtils.injectMotionEvent(swipeSource, MotionEvent.ACTION_DOWN, down, down,
+                EventUtils.injectMotionEvent(swipeSource, MotionEvent.ACTION_DOWN, down, eventTime,
                         center.x, center.y, 1.0f,
                         0);
                 isMoving = false;
-                moveOnce(pointer.x, pointer.y);
+                moveOnce(pointer.x, pointer.y, down, now);
             } else if ( !isMoving  || mDirection != direct || once ){
-                moveOnce(pointer.x, pointer.y);
+                moveOnce(pointer.x, pointer.y, down, eventTime);
             }
             this.mDirection = direct;
             long duration = SystemClock.uptimeMillis() - now;
 
         }
 
-        private void moveOnce(float horizental, float vertical) {
+        private void moveOnce(float horizental, float vertical, long down, long eventTime) {
+            Log.d(TAG, "moveOnce():  horizental :" + horizental + ", vertical :" + vertical + "");
             if(batchDroped) {
                 return;
             }
             long now = SystemClock.uptimeMillis();
-            EventUtils.injectMotionEvent(swipeSource, MotionEvent.ACTION_MOVE, now, now,
+            EventUtils.injectMotionEvent(swipeSource, MotionEvent.ACTION_MOVE, down, eventTime,
                     center.x + horizental, center.y + vertical, 1.0f,
                     0);
             isMoving = true;
@@ -224,25 +374,90 @@ public class EventUtils {
             this.center = center;
         }
 
-        public static class Pointer {
-            public Pointer(float x, float y) {
-                this.x = x;
-                this.y = y;
-            }
-            public Pointer(){
+    }
 
-            }
-            public float x , y;
+    public static class Pointer {
+        public Pointer(float x, float y) {
+            this.x = x;
+            this.y = y;
+        }
+        public Pointer(){
 
-            @Override
-            public String toString() {
-                return "Pointer{" +
-                        "x=" + x +
-                        ", y=" + y +
-                        '}';
-            }
+        }
+        public float x , y;
+
+        @Override
+        public String toString() {
+            return "Pointer{" +
+                    "x=" + x +
+                    ", y=" + y +
+                    '}';
+        }
+    }
+
+
+
+    public static class ClickController {
+        private final ExecutorService executor = Executors.newSingleThreadExecutor();
+        private final ExecutorService service = Executors.newSingleThreadExecutor();
+        private volatile boolean stopped = true;
+        private long downTime, eventTime;
+
+        private final int source = 0xd002;
+        private final int deviceId = 10;
+        private int x, y; // 点击的坐标位置
+
+        private static class SingletonHolder {
+            private static final ClickController INSTANCE = new ClickController();
         }
 
+        public static ClickController getInstance() {
+            return SingletonHolder.INSTANCE;
+        }
+
+        public ClickController setClickPosition(int x, int y) {
+            this.x = x;
+            this.y = y;
+            return this;
+        }
+
+        public void startClick() {
+            if (!stopped) {
+                return;
+            }
+            stopped = false;
+            executor.execute(this::startClickInner);
+        }
+
+        public void stopClick() {
+            stopped = true;
+        }
+
+        private void startClickInner() {
+            while (!stopped) {
+                performClick();
+                try {
+                    Thread.sleep(10);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+            }
+            stopped = true;
+        }
+
+        private void performClick() {
+            service.execute(new Runnable() {
+                @Override
+                public void run() {
+                    long now = SystemClock.uptimeMillis();
+                    injectMotionEvent(InputDevice.SOURCE_TOUCHSCREEN, MotionEvent.ACTION_DOWN, now, now, x, y, 1.0f,
+                            0);
+                    injectMotionEvent(InputDevice.SOURCE_TOUCHSCREEN, MotionEvent.ACTION_UP, now, now, x, y, 0.0f, 0);
+                }
+            });
+
+        }
     }
+
 
 }

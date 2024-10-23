@@ -13,14 +13,20 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.fde.keyassist.R;
+import com.fde.keyassist.entity.AmplifyMappingEntity;
+import com.fde.keyassist.entity.CursorEntity;
+import com.fde.keyassist.entity.DialogEntity;
 import com.fde.keyassist.entity.DirectMappingEntity;
+import com.fde.keyassist.entity.DoubleClickMappingEntity;
 import com.fde.keyassist.entity.KeyMappingEntity;
 import com.fde.keyassist.entity.Plan;
+import com.fde.keyassist.entity.ScaleMappingEntity;
 import com.fde.keyassist.util.Constant;
 
 import org.litepal.LitePal;
@@ -102,8 +108,8 @@ public class ApplyDialog {
             right.setText(entity.getRightKeyValue());
             ImageView delete = view.findViewById(R.id.modify_dialog_tap_click_delete);
             delete.setVisibility(View.GONE);
-            TextView hint = view.findViewById(R.id.modify_dialog_direct_click_hint);
-            hint.setVisibility(View.GONE);
+//            TextView hint = view.findViewById(R.id.modify_dialog_direct_click_hint);
+//            hint.setVisibility(View.GONE);
             params.x = entity.getX() - params.width/2;
             params.y = entity.getY() - params.height/2;
             windowManager.addView(view,params);
@@ -143,6 +149,128 @@ public class ApplyDialog {
 //        applyTapClick();
 //        applyDirect();
 //    }
+
+    @SuppressLint("MissingInflatedId")
+    public List<ScaleMappingEntity> applyScaleClick(){
+        List<ScaleMappingEntity> curKeyMappingEntity = new ArrayList<>();
+        List<Plan> plans = LitePal.where("planName = ?",planName).find(Plan.class);
+        if(plans != null && plans.size() >=1){
+            Plan plan = plans.get(0);
+            curKeyMappingEntity = LitePal.where("planId = ?", plan.getId().toString()).find(ScaleMappingEntity.class);
+        }
+        for (ScaleMappingEntity entity : curKeyMappingEntity){
+            if(entity.getEventType() == Constant.SCALE) {
+                View view = LayoutInflater.from(context).inflate(R.layout.modify_dialog_scale, null, false);
+                ImageView imageView = view.findViewById(R.id.modify_dialog_scale_delete);
+                imageView.setVisibility(View.GONE);
+                TextView textView = view.findViewById(R.id.modify_dialog_scale_hint);
+                textView.setVisibility(View.GONE);
+
+                params.x = entity.getX() - params.width/2;
+                params.y = entity.getY() - params.height/2;
+                if(entity.getKeyValue() != null && !entity.getKeyValue().isEmpty()){
+                    TextView apply_dialog_tap_click_edit = view.findViewById(R.id.modify_dialog_scale_edit);
+                    apply_dialog_tap_click_edit.setText(entity.getKeyValue());
+                }
+                windowManager.addView(view,params);
+                allView.add(view);
+            }
+
+        }
+        return curKeyMappingEntity;
+    }
+
+
+    @SuppressLint("MissingInflatedId")
+    public List<AmplifyMappingEntity> applyAmplifyClick(){
+        List<AmplifyMappingEntity> curKeyMappingEntity = new ArrayList<>();
+        List<Plan> plans = LitePal.where("planName = ?",planName).find(Plan.class);
+        if(plans != null && plans.size() >=1){
+            Plan plan = plans.get(0);
+            curKeyMappingEntity = LitePal.where("planId = ?", plan.getId().toString()).find(AmplifyMappingEntity.class);
+        }
+        for (AmplifyMappingEntity entity : curKeyMappingEntity){
+            if(entity.getEventType() == Constant.AMPLIFY) {
+                View view = LayoutInflater.from(context).inflate(R.layout.modify_dialog_amplify, null, false);
+                ImageView imageView = view.findViewById(R.id.modify_dialog_scale_delete);
+                imageView.setVisibility(View.GONE);
+                TextView textView = view.findViewById(R.id.modify_dialog_scale_hint);
+                textView.setVisibility(View.GONE);
+
+                params.x = entity.getX() - params.width/2;
+                params.y = entity.getY() - params.height/2;
+                if(entity.getKeyValue() != null && !entity.getKeyValue().isEmpty()){
+                    TextView apply_dialog_tap_click_edit = view.findViewById(R.id.modify_dialog_scale_edit);
+                    apply_dialog_tap_click_edit.setText(entity.getKeyValue());
+                }
+                windowManager.addView(view,params);
+                allView.add(view);
+            }
+
+        }
+        return curKeyMappingEntity;
+    }
+
+    public List<DoubleClickMappingEntity> applyDoubleClick(){
+        List<DoubleClickMappingEntity> curKeyMappingEntity = new ArrayList<>();
+        List<Plan> plans = LitePal.where("planName = ?",planName).find(Plan.class);
+        if(plans != null && plans.size() >=1){
+            Plan plan = plans.get(0);
+            curKeyMappingEntity = LitePal.where("planId = ?", plan.getId().toString()).find(DoubleClickMappingEntity.class);
+        }
+        for (DoubleClickMappingEntity entity : curKeyMappingEntity){
+            if(entity.getEventType() == Constant.DOUBLE_CLICK_EVENT) {
+                View view = LayoutInflater.from(context).inflate(R.layout.modify_dialog_double_click, null, false);
+                ImageView modify_dialog_double_click_delete = view.findViewById(R.id.modify_dialog_double_click_delete);
+                modify_dialog_double_click_delete.setVisibility(View.GONE);
+                TextView modify_dialog_double_click_count = view.findViewById(R.id.modify_dialog_double_click_count);
+                modify_dialog_double_click_count.setVisibility(View.GONE);
+                Button modify_dialog_double_click_up = view.findViewById(R.id.modify_dialog_double_click_up);
+                modify_dialog_double_click_up.setVisibility(View.GONE);
+                Button modify_dialog_double_click_down = view.findViewById(R.id.modify_dialog_double_click_down);
+                modify_dialog_double_click_down.setVisibility(View.GONE);
+                TextView modify_dialog_tap_click_hint = view.findViewById(R.id.modify_dialog_tap_click_hint);
+                modify_dialog_tap_click_hint.setVisibility(View.GONE);
+                params.x = entity.getX() - params.width/2;
+                params.y = entity.getY() - params.height/2;
+                if(entity.getKeyValue() != null && !entity.getKeyValue().isEmpty()){
+                    TextView apply_dialog_tap_click_edit = view.findViewById(R.id.modify_dialog_double_click_edit);
+                    apply_dialog_tap_click_edit.setText(entity.getKeyValue());
+                }
+                windowManager.addView(view,params);
+                allView.add(view);
+            }
+
+        }
+        return curKeyMappingEntity;
+    }
+
+    public Boolean applyCursor(){
+        List<CursorEntity> cursorEntities = new ArrayList<>();
+        List<Plan> plans = LitePal.where("planName = ?",planName).find(Plan.class);
+        if(plans != null && plans.size() >=1){
+            Plan plan = plans.get(0);
+            cursorEntities = LitePal.where("planId = ?", plan.getId().toString()).find(CursorEntity.class);
+        }
+        if(cursorEntities != null && !cursorEntities.isEmpty()){
+            return cursorEntities.get(0).getCursorSwitch();
+        }
+        return false;
+    }
+
+    public Boolean applyDialog(){
+        List<DialogEntity> dialogEntities = new ArrayList<>();
+        List<Plan> plans = LitePal.where("planName = ?",planName).find(Plan.class);
+        if(plans != null && plans.size() >=1){
+            Plan plan = plans.get(0);
+            dialogEntities = LitePal.where("planId = ?", plan.getId().toString()).find(DialogEntity.class);
+        }
+        if(dialogEntities != null && !dialogEntities.isEmpty()){
+            return dialogEntities.get(0).getDialogSwitch();
+        }
+        return false;
+    }
+
 
     public void cancal(){
         if(windowManager!=null && allView!=null && !allView.isEmpty()){

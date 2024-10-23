@@ -4,25 +4,36 @@ import static android.content.Context.WINDOW_SERVICE;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.graphics.Color;
 import android.graphics.PixelFormat;
 import android.os.Build;
 import android.os.SystemClock;
 import android.util.DisplayMetrics;
 import android.view.Gravity;
+import android.view.InputDevice;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.NumberPicker;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 
+import com.fde.keyassist.FloatingService;
 import com.fde.keyassist.R;
+import com.fde.keyassist.entity.AmplifyMappingEntity;
+import com.fde.keyassist.entity.CursorEntity;
+import com.fde.keyassist.entity.DialogEntity;
 import com.fde.keyassist.entity.DirectMappingEntity;
+import com.fde.keyassist.entity.DoubleClickMappingEntity;
 import com.fde.keyassist.entity.KeyMappingEntity;
 import com.fde.keyassist.entity.Plan;
+import com.fde.keyassist.entity.ScaleMappingEntity;
 import com.fde.keyassist.util.Constant;
 
 
@@ -42,22 +53,63 @@ public class ModifyDialog extends BaseServiceDialog implements View.OnClickListe
 
     private Integer eventType = Constant.TAP_CLICK_EVENT;
 
+    private Boolean cursorSwitch = false;
+    private Boolean dialogSwitch = false;
+
     private TextView curText;
+    private TextView lastText;
 //    private TextView curHintText;
 
     private View curView;
 
     private String planName;
 
+    private Boolean scale;
+
+
 
     private List<View> tapView = new ArrayList<>();
     private List<View> allView = new ArrayList<>();
     private List<View> directView = new ArrayList<>();
+    private List<View> doubleView = new ArrayList<>();
+    private List<View> scaleView = new ArrayList<>();
+    private List<View> amplifyView = new ArrayList<>();
 
     private WindowManager windowManager;
 
     private WindowManager.LayoutParams layoutParams;
 
+    private NumberPicker modify_dialog_double_click_number_picker;
+
+    private Button modify_dialog_double_click_up;
+    private Button modify_dialog_double_click_down;
+//    private TextView modify_dialog_double_click_count;
+
+    private TextView curCount;
+
+    public Boolean getScale() {
+        return scale;
+    }
+
+    public void setScale(Boolean scale) {
+        this.scale = scale;
+    }
+
+    public Boolean getCursorSwitch() {
+        return cursorSwitch;
+    }
+
+    public void setCursorSwitch(Boolean cursorSwitch) {
+        this.cursorSwitch = cursorSwitch;
+    }
+
+    public void setDialogSwitch(Boolean dialogSwitch){
+        this.dialogSwitch = dialogSwitch;
+    }
+
+    public Boolean getDialogSwitch(){
+        return dialogSwitch;
+    }
 
     public void setEventType(Integer eventType) {
         this.eventType = eventType;
@@ -97,6 +149,12 @@ public class ModifyDialog extends BaseServiceDialog implements View.OnClickListe
                 createTapClick(event);
             }else if(eventType == Constant.DIRECTION_KEY){
                 createDirectClick(event);
+            }else if(eventType == Constant.DOUBLE_CLICK_EVENT){
+                createDoubleClick(event);
+            }else if(eventType == Constant.SCALE){
+                createScale(event);
+            } else if (eventType == Constant.AMPLIFY) {
+                createAmplify(event);
             }
 
         }
@@ -114,9 +172,79 @@ public class ModifyDialog extends BaseServiceDialog implements View.OnClickListe
         layoutParams.x = (int)event.getRawX() - layoutParams.width/2;
         layoutParams.y = (int)event.getRawY() - layoutParams.height/2;
         windowManager.addView(view,layoutParams);
+        if(curText != null){
+            curText.setTextColor(Color.WHITE);
+        }
         curText = view.findViewById(R.id.modify_dialog_tap_click_edit);
+        curText.setTextColor(Color.RED);
         curView = view;
         tapView.add(view);
+        allView.add(view);
+        dragView(view,"");
+    }
+
+    public void createAmplify(MotionEvent event){
+        // 点击事件
+        View view = LayoutInflater.from(getContext()).inflate(R.layout.modify_dialog_amplify,null,false);
+//                curText = view.findViewById(R.id.modify_dialog_tap_click_edit);
+//                curHintText = view.findViewById(R.id.modify_dialog_tap_click_hint);
+        layoutParams.width = 70;
+        layoutParams.height = 70;
+        layoutParams.x = (int)event.getRawX() - layoutParams.width/2;
+        layoutParams.y = (int)event.getRawY() - layoutParams.height/2;
+        windowManager.addView(view,layoutParams);
+        if(curText != null){
+            curText.setTextColor(Color.WHITE);
+        }
+        curText = view.findViewById(R.id.modify_dialog_scale_edit);
+        curText.setTextColor(Color.RED);
+        curView = view;
+        amplifyView.add(view);
+        allView.add(view);
+        dragView(view,"");
+    }
+
+    public void createScale(MotionEvent event){
+        // 点击事件
+        View view = LayoutInflater.from(getContext()).inflate(R.layout.modify_dialog_scale,null,false);
+//                curText = view.findViewById(R.id.modify_dialog_tap_click_edit);
+//                curHintText = view.findViewById(R.id.modify_dialog_tap_click_hint);
+        layoutParams.width = 70;
+        layoutParams.height = 70;
+        layoutParams.x = (int)event.getRawX() - layoutParams.width/2;
+        layoutParams.y = (int)event.getRawY() - layoutParams.height/2;
+        windowManager.addView(view,layoutParams);
+        if(curText != null){
+            curText.setTextColor(Color.WHITE);
+        }
+        curText = view.findViewById(R.id.modify_dialog_scale_edit);
+        curText.setTextColor(Color.RED);
+        curView = view;
+        scaleView.add(view);
+        allView.add(view);
+        dragView(view,"");
+    }
+
+
+    @SuppressLint("MissingInflatedId")
+    public void createDoubleClick(MotionEvent event){
+        // 点击事件
+        View view = LayoutInflater.from(getContext()).inflate(R.layout.modify_dialog_double_click,null,false);
+//                curText = view.findViewById(R.id.modify_dialog_tap_click_edit);
+//                curHintText = view.findViewById(R.id.modify_dialog_tap_click_hint);
+        layoutParams.width = 80;
+        layoutParams.height = 70;
+        layoutParams.x = (int)event.getRawX() - layoutParams.width/2;
+        layoutParams.y = (int)event.getRawY() - layoutParams.height/2;
+        windowManager.addView(view,layoutParams);
+
+        if(curText != null){
+            curText.setTextColor(Color.WHITE);
+        }
+        curText = view.findViewById(R.id.modify_dialog_double_click_edit);
+        curText.setTextColor(Color.RED);
+        curView = view;
+        doubleView.add(view);
         allView.add(view);
         dragView(view,"");
     }
@@ -125,11 +253,15 @@ public class ModifyDialog extends BaseServiceDialog implements View.OnClickListe
         // 方向键
         View view = LayoutInflater.from(getContext()).inflate(R.layout.modify_dialog_direct_click,null,false);
         layoutParams.width = 80;
-        layoutParams.height = 100;
+        layoutParams.height = 120;
         layoutParams.x = (int)event.getRawX() - layoutParams.width/2;
         layoutParams.y = (int)event.getRawY() - layoutParams.height/2;
         windowManager.addView(view,layoutParams);
+        if(curText != null){
+            curText.setTextColor(Color.WHITE);
+        }
         curText = view.findViewById(R.id.modify_dialog_direct_click_up);
+        curText.setTextColor(Color.RED);
         curView = view;
         directView.add(view);
         allView.add(view);
@@ -222,7 +354,6 @@ public class ModifyDialog extends BaseServiceDialog implements View.OnClickListe
 
         // 单击事件
 
-
         view.setClickable(true);
         view.setOnTouchListener(new View.OnTouchListener() {
 
@@ -285,20 +416,71 @@ public class ModifyDialog extends BaseServiceDialog implements View.OnClickListe
         if(plans != null && plans.size() >=1){
             LitePal.deleteAll(KeyMappingEntity.class, "planId = ?" , plans.get(0).getId().toString());
             LitePal.deleteAll(DirectMappingEntity.class, "planId = ?" , plans.get(0).getId().toString());
+            LitePal.deleteAll(DoubleClickMappingEntity.class, "planId = ?" , plans.get(0).getId().toString());
+            LitePal.deleteAll(ScaleMappingEntity.class, "planId = ?" , plans.get(0).getId().toString());
+            LitePal.deleteAll(CursorEntity.class, "planId = ?" , plans.get(0).getId().toString());
+            LitePal.deleteAll(DialogEntity.class, "planId = ?" , plans.get(0).getId().toString());
+            LitePal.deleteAll(AmplifyMappingEntity.class, "planId = ?" , plans.get(0).getId().toString());
         }
         // 保存单个按键
         saveTapEvent();
         // 保存方向键
         saveDirectEvent();
+        // 保存连击键
+        saveDoubleClickEvent();
+        // 保存缩放键
+        saveScaleEvent();
+        // 保存鼠标状态
+        saveCursor();
+
+        saveDialog();
+
+        saveAmplifyEvent();
+
+
         if(allView != null && !allView.isEmpty()){
             for (View view : allView){
                 windowManager.removeView(view);
             }
         }
+        assert allView != null;
         allView.clear();
         tapView.clear();
         directView.clear();
+        doubleView.clear();
+        scaleView.clear();
+        amplifyView.clear();
         dismiss();
+    }
+
+    public void saveCursor(){
+        CursorEntity cursorEntity = new CursorEntity();
+        cursorEntity.setCursorSwitch(cursorSwitch);
+        List<Plan> plans = LitePal.where("planName = ?",planName).find(Plan.class);
+        if(plans != null && plans.size() >=1){
+            cursorEntity.setPlanId(plans.get(0).getId());
+        }else{
+            Plan plan = new Plan();
+            plan.setPlanName(planName);
+            plan.save();
+            cursorEntity.setPlanId(plan.getId());
+        }
+        cursorEntity.save();
+    }
+
+    public void saveDialog(){
+        DialogEntity dialogEntity = new DialogEntity();
+        dialogEntity.setDialogSwitch(dialogSwitch);
+        List<Plan> plans = LitePal.where("planName = ?",planName).find(Plan.class);
+        if(plans != null && plans.size() >=1){
+            dialogEntity.setPlanId(plans.get(0).getId());
+        }else{
+            Plan plan = new Plan();
+            plan.setPlanName(planName);
+            plan.save();
+            dialogEntity.setPlanId(plan.getId());
+        }
+        dialogEntity.save();
     }
 
     public void saveTapEvent(){
@@ -311,6 +493,9 @@ public class ModifyDialog extends BaseServiceDialog implements View.OnClickListe
             keyMapping.setX(centerPostion[0]);
             keyMapping.setY(centerPostion[1]);
             TextView textView = view.findViewById(R.id.modify_dialog_tap_click_edit);
+            if(textView.getText().toString().isEmpty()){
+                continue;
+            }
             String keyValue = textView.getText().toString();
             keyMapping.setKeyValue(keyValue);
             keyMapping.setEventType(Constant.TAP_CLICK_EVENT);
@@ -335,6 +520,87 @@ public class ModifyDialog extends BaseServiceDialog implements View.OnClickListe
             keyMapping.save();
         }
     }
+
+    // 保存缩放事件
+    public void saveScaleEvent(){
+        // 单机事件view
+        for (View view : scaleView){
+            // 清空已有的保存
+            // 保存KeyMappingEntity
+            ScaleMappingEntity keyMapping = new ScaleMappingEntity();
+            int[] centerPostion = getCenterPostion(view);
+            keyMapping.setX(centerPostion[0]);
+            keyMapping.setY(centerPostion[1]);
+            TextView textView = view.findViewById(R.id.modify_dialog_scale_edit);
+            if(textView.getText().toString().isEmpty()){
+                continue;
+            }
+            String keyValue = textView.getText().toString();
+            keyMapping.setKeyValue(keyValue);
+            keyMapping.setEventType(Constant.SCALE);
+
+            List<Plan> plans = LitePal.where("planName = ?",planName).find(Plan.class);
+            if(plans != null && plans.size() >=1){
+                keyMapping.setPlanId(plans.get(0).getId());
+            }else{
+                Plan plan = new Plan();
+                plan.setPlanName(planName);
+                plan.save();
+                keyMapping.setPlanId(plan.getId());
+            }
+
+            // 单个按键
+            if(keyValue.length() == 1){
+                int keycode = KeyEvent.keyCodeFromString(keyValue);
+                keyMapping.setKeycode(keycode);
+                keyMapping.setCombination(false);
+                keyMapping.setCombinationKeyCode(0);
+            }
+            keyMapping.save();
+        }
+    }
+
+    public void saveAmplifyEvent(){
+        if(amplifyView == null || amplifyView.isEmpty()){
+            return;
+        }
+        // 单机事件view
+        for (View view : amplifyView){
+            // 清空已有的保存
+            // 保存KeyMappingEntity
+            AmplifyMappingEntity keyMapping = new AmplifyMappingEntity();
+            int[] centerPostion = getCenterPostion(view);
+            keyMapping.setX(centerPostion[0]);
+            keyMapping.setY(centerPostion[1]);
+            TextView textView = view.findViewById(R.id.modify_dialog_scale_edit);
+            if(textView.getText().toString().isEmpty()){
+                continue;
+            }
+            String keyValue = textView.getText().toString();
+            keyMapping.setKeyValue(keyValue);
+            keyMapping.setEventType(Constant.AMPLIFY);
+
+            List<Plan> plans = LitePal.where("planName = ?",planName).find(Plan.class);
+            if(plans != null && plans.size() >=1){
+                keyMapping.setPlanId(plans.get(0).getId());
+            }else{
+                Plan plan = new Plan();
+                plan.setPlanName(planName);
+                plan.save();
+                keyMapping.setPlanId(plan.getId());
+            }
+
+            // 单个按键
+            if(keyValue.length() == 1){
+                int keycode = KeyEvent.keyCodeFromString(keyValue);
+                keyMapping.setKeycode(keycode);
+                keyMapping.setCombination(false);
+                keyMapping.setCombinationKeyCode(0);
+            }
+            keyMapping.save();
+        }
+    }
+
     // 保存方向键
     public void saveDirectEvent(){
          for(View view : directView){
@@ -400,6 +666,46 @@ public class ModifyDialog extends BaseServiceDialog implements View.OnClickListe
              directMappingEntity.save();
          }
     }
+    // 保存连击事件
+    public void saveDoubleClickEvent(){
+        // 清空已有的保存
+        // 保存KeyMappingEntity
+        for(View view : doubleView){
+            DoubleClickMappingEntity keyMapping = new DoubleClickMappingEntity();
+            int[] centerPostion = getCenterPostion(view);
+            keyMapping.setX(centerPostion[0]);
+            keyMapping.setY(centerPostion[1]);
+            TextView textView = view.findViewById(R.id.modify_dialog_double_click_edit);
+            if(textView.getText().toString().isEmpty()){
+                continue;
+            }
+            String keyValue = textView.getText().toString();
+            keyMapping.setKeyValue(keyValue);
+            keyMapping.setEventType(Constant.DOUBLE_CLICK_EVENT);
+            TextView countText = view.findViewById(R.id.modify_dialog_double_click_count);
+            String count = countText.getText().toString();
+            keyMapping.setCount(Integer.valueOf(count));
+
+            List<Plan> plans = LitePal.where("planName = ?",planName).find(Plan.class);
+            if(plans != null && plans.size() >=1){
+                keyMapping.setPlanId(plans.get(0).getId());
+            }else{
+                Plan plan = new Plan();
+                plan.setPlanName(planName);
+                plan.save();
+                keyMapping.setPlanId(plan.getId());
+            }
+
+            // 单个按键
+            if(keyValue.length() == 1){
+                int keycode = KeyEvent.keyCodeFromString(keyValue);
+                keyMapping.setKeycode(keycode);
+                keyMapping.setCombination(false);
+                keyMapping.setCombinationKeyCode(0);
+            }
+            keyMapping.save();
+        }
+    }
 
 
 
@@ -418,7 +724,62 @@ public class ModifyDialog extends BaseServiceDialog implements View.OnClickListe
             modify_dialog_tap_click_edit.setText(entity.getKeyValue());
             tapView.add(view);
             allView.add(view);
+            eventType = entity.getEventType();
             dragView(view,"");
+            layoutParams.x = entity.getX() - layoutParams.width/2;
+            layoutParams.y = entity.getY() - layoutParams.height/2;
+            windowManager.addView(view,layoutParams);
+            createTextListener(view,entity.getEventType());
+        }
+
+    }
+
+    public void showAmplifyEvent(){
+
+        List<AmplifyMappingEntity> curKeyMappingEntity = new ArrayList<>();
+        // 取出planId
+        List<Plan> plans = LitePal.where("planName = ?",planName).find(Plan.class);
+        if(plans != null && plans.size() >=1){
+            Plan plan = plans.get(0);
+            curKeyMappingEntity = LitePal.where("planId = ?", plan.getId().toString()).find(AmplifyMappingEntity.class);
+        }
+        for (AmplifyMappingEntity entity : curKeyMappingEntity){
+            View view = LayoutInflater.from(getContext()).inflate(R.layout.modify_dialog_amplify, null, false);
+            TextView modify_dialog_tap_click_edit = view.findViewById(R.id.modify_dialog_scale_edit);
+            modify_dialog_tap_click_edit.setText(entity.getKeyValue());
+            scaleView.add(view);
+            allView.add(view);
+            eventType = entity.getEventType();
+            dragView(view,"");
+            layoutParams.width = 70;
+            layoutParams.height = 70;
+            layoutParams.x = entity.getX() - layoutParams.width/2;
+            layoutParams.y = entity.getY() - layoutParams.height/2;
+            windowManager.addView(view,layoutParams);
+            createTextListener(view,entity.getEventType());
+        }
+
+    }
+
+    public void showScaleEvent(){
+
+        List<ScaleMappingEntity> curKeyMappingEntity = new ArrayList<>();
+        // 取出planId
+        List<Plan> plans = LitePal.where("planName = ?",planName).find(Plan.class);
+        if(plans != null && plans.size() >=1){
+            Plan plan = plans.get(0);
+            curKeyMappingEntity = LitePal.where("planId = ?", plan.getId().toString()).find(ScaleMappingEntity.class);
+        }
+        for (ScaleMappingEntity entity : curKeyMappingEntity){
+            View view = LayoutInflater.from(getContext()).inflate(R.layout.modify_dialog_scale, null, false);
+            TextView modify_dialog_tap_click_edit = view.findViewById(R.id.modify_dialog_scale_edit);
+            modify_dialog_tap_click_edit.setText(entity.getKeyValue());
+            scaleView.add(view);
+            allView.add(view);
+            eventType = entity.getEventType();
+            dragView(view,"");
+            layoutParams.width = 70;
+            layoutParams.height = 70;
             layoutParams.x = entity.getX() - layoutParams.width/2;
             layoutParams.y = entity.getY() - layoutParams.height/2;
             windowManager.addView(view,layoutParams);
@@ -450,6 +811,7 @@ public class ModifyDialog extends BaseServiceDialog implements View.OnClickListe
             right.setText(entity.getRightKeyValue());
             directView.add(view);
             allView.add(view);
+            eventType = entity.getEventType();
             dragView(view,"");
             layoutParams.x = entity.getX() - layoutParams.width/2;
             layoutParams.y = entity.getY() - layoutParams.height/2;
@@ -458,10 +820,72 @@ public class ModifyDialog extends BaseServiceDialog implements View.OnClickListe
         }
 
     }
+
+    @SuppressLint("SetTextI18n")
+    public void showDoubleClickEvent(){
+        List<DoubleClickMappingEntity> curKeyMappingEntity = new ArrayList<>();
+        // 取出planId
+        List<Plan> plans = LitePal.where("planName = ?",planName).find(Plan.class);
+        if(plans != null && plans.size() >=1){
+            Plan plan = plans.get(0);
+            curKeyMappingEntity = LitePal.where("planId = ?", plan.getId().toString()).find(DoubleClickMappingEntity.class);
+        }
+        for (DoubleClickMappingEntity entity : curKeyMappingEntity){
+            View view = LayoutInflater.from(getContext()).inflate(R.layout.modify_dialog_double_click, null, false);
+            TextView modify_dialog_tap_click_edit = view.findViewById(R.id.modify_dialog_double_click_edit);
+            modify_dialog_tap_click_edit.setText(entity.getKeyValue());
+            TextView count = view.findViewById(R.id.modify_dialog_double_click_count);
+            count.setText(entity.getCount().toString());
+            doubleView.add(view);
+            allView.add(view);
+            eventType = entity.getEventType();
+            dragView(view,"");
+            layoutParams.width = 70;
+            layoutParams.height = 70;
+            layoutParams.x = entity.getX() - layoutParams.width/2;
+            layoutParams.y = entity.getY() - layoutParams.height/2;
+            windowManager.addView(view,layoutParams);
+            createTextListener(view,entity.getEventType());
+        }
+    }
+
+    public void showCursor(){
+        // 取出planId
+        List<Plan> plans = LitePal.where("planName = ?",planName).find(Plan.class);
+        List<CursorEntity> cursorEntity = new ArrayList<>();
+        if(plans != null && plans.size() >=1){
+            Plan plan = plans.get(0);
+            cursorEntity = LitePal.where("planId = ?", plan.getId().toString()).find(CursorEntity.class);
+        }
+        if(cursorEntity!= null && !cursorEntity.isEmpty()){
+            CursorEntity cursor = cursorEntity.get(0);
+            cursorSwitch = cursor.getCursorSwitch();
+        }
+    }
+
+    public void showDialog(){
+        // 取出planId
+        List<Plan> plans = LitePal.where("planName = ?",planName).find(Plan.class);
+        List<DialogEntity> dialogEntities = new ArrayList<>();
+        if(plans != null && plans.size() >=1){
+            Plan plan = plans.get(0);
+            dialogEntities = LitePal.where("planId = ?", plan.getId().toString()).find(DialogEntity.class);
+        }
+        if(dialogEntities!= null && !dialogEntities.isEmpty()){
+            DialogEntity dialog = dialogEntities.get(0);
+            dialogSwitch = dialog.getDialogSwitch();
+        }
+    }
+
     // 从数据库取出所有事件
     public void showView(){
         showTapEvent();
         showDirectEvent();
+        showDoubleClickEvent();
+        showScaleEvent();
+        showCursor();
+        showDialog();
+        showAmplifyEvent();
     }
 
 
@@ -475,14 +899,18 @@ public class ModifyDialog extends BaseServiceDialog implements View.OnClickListe
             }
             allView.clear();
             tapView.clear();
-            dismiss();
-        }
+            directView.clear();
+            doubleView.clear();
+            scaleView.clear();
 
+        }
+        dismiss();
 
     }
 
 
-    @SuppressLint("ClickableViewAccessibility")
+
+    @SuppressLint({"ClickableViewAccessibility","SetTextI18n"})
     public void createTextListener(View view,Integer evn){
         if(view == null) return;
         if(evn == Constant.TAP_CLICK_EVENT){
@@ -491,7 +919,10 @@ public class ModifyDialog extends BaseServiceDialog implements View.OnClickListe
                     textView.setOnTouchListener(new View.OnTouchListener() {
                         @Override
                         public boolean onTouch(View view, MotionEvent motionEvent) {
+                            if(curText != null)
+                                curText.setTextColor(Color.WHITE);
                             curText = textView;
+                            curText.setTextColor(Color.RED);
                             eventType = evn;
                             return false;
                         }
@@ -507,6 +938,64 @@ public class ModifyDialog extends BaseServiceDialog implements View.OnClickListe
                 }
             });
 
+
+        }
+
+        if(evn == Constant.DOUBLE_CLICK_EVENT){
+            TextView textView = view.findViewById(R.id.modify_dialog_double_click_edit);
+            modify_dialog_double_click_up = view.findViewById(R.id.modify_dialog_double_click_up);
+            modify_dialog_double_click_down = view.findViewById(R.id.modify_dialog_double_click_down);
+            TextView modify_dialog_double_click_count = view.findViewById(R.id.modify_dialog_double_click_count);
+            curCount = modify_dialog_double_click_count;
+            if(textView != null){
+                textView.setOnTouchListener(new View.OnTouchListener() {
+                    @Override
+                    public boolean onTouch(View view, MotionEvent motionEvent) {
+                        if(curText != null)
+                            curText.setTextColor(Color.WHITE);
+                        curText = textView;
+                        curText.setTextColor(Color.RED);
+                        curCount = modify_dialog_double_click_count;
+                        eventType = evn;
+                        return false;
+                    }
+                });
+            }
+            ImageView imageView = view.findViewById(R.id.modify_dialog_double_click_delete);
+            imageView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    windowManager.removeView(view);
+                    doubleView.remove(view);
+                    allView.remove(view);
+                }
+            });
+            modify_dialog_double_click_up.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    curCount = modify_dialog_double_click_count;
+                    Integer count = Integer.valueOf(curCount.getText().toString());
+                    count = count -1;
+                    if(count <= 0){
+                        count = 1;
+                        curCount.setText(count.toString());
+                    }
+                    curCount.setText(count.toString());
+                }
+            });
+            modify_dialog_double_click_down = view.findViewById(R.id.modify_dialog_double_click_down);
+            modify_dialog_double_click_down.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    curCount = modify_dialog_double_click_count;
+                    Integer count = Integer.valueOf(curCount.getText().toString());
+                    count = count + 1;
+                    if(count >=100){
+                        count = 99;
+                    }
+                    curCount.setText(count.toString());
+                }
+            });
 
         }
 
@@ -527,7 +1016,10 @@ public class ModifyDialog extends BaseServiceDialog implements View.OnClickListe
                 up.setOnTouchListener(new View.OnTouchListener() {
                     @Override
                     public boolean onTouch(View view, MotionEvent motionEvent) {
+                        if(curText != null)
+                            curText.setTextColor(Color.WHITE);
                         curText = up;
+                        curText.setTextColor(Color.RED);
                         eventType = evn;
                         return false;
                     }
@@ -539,7 +1031,10 @@ public class ModifyDialog extends BaseServiceDialog implements View.OnClickListe
                 down.setOnTouchListener(new View.OnTouchListener() {
                     @Override
                     public boolean onTouch(View view, MotionEvent motionEvent) {
+                        if(curText != null)
+                            curText.setTextColor(Color.WHITE);
                         curText = down;
+                        curText.setTextColor(Color.RED);
                         eventType = evn;
                         return false;
                     }
@@ -552,7 +1047,10 @@ public class ModifyDialog extends BaseServiceDialog implements View.OnClickListe
                 left.setOnTouchListener(new View.OnTouchListener() {
                     @Override
                     public boolean onTouch(View view, MotionEvent motionEvent) {
+                        if(curText != null)
+                            curText.setTextColor(Color.WHITE);
                         curText = left;
+                        curText.setTextColor(Color.RED);
                         eventType = evn;
                         return false;
                     }
@@ -564,7 +1062,10 @@ public class ModifyDialog extends BaseServiceDialog implements View.OnClickListe
                 right.setOnTouchListener(new View.OnTouchListener() {
                     @Override
                     public boolean onTouch(View view, MotionEvent motionEvent) {
+                        if(curText != null)
+                            curText.setTextColor(Color.WHITE);
                         curText = right;
+                        curText.setTextColor(Color.RED);
                         eventType = evn;
                         return false;
                     }
@@ -573,7 +1074,65 @@ public class ModifyDialog extends BaseServiceDialog implements View.OnClickListe
 
         }
 
+        if(evn == Constant.SCALE){
+            TextView textView = view.findViewById(R.id.modify_dialog_scale_edit);
+            if(textView != null){
+                textView.setOnTouchListener(new View.OnTouchListener() {
+                    @Override
+                    public boolean onTouch(View view, MotionEvent motionEvent) {
+                        if(curText != null)
+                            curText.setTextColor(Color.WHITE);
+                        curText = textView;
+                        curText.setTextColor(Color.RED);
+                        eventType = evn;
+                        return false;
+                    }
+                });
+            }
+            ImageView imageView = view.findViewById(R.id.modify_dialog_scale_delete);
+            imageView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    windowManager.removeView(view);
+                    allView.remove(view);
+                    scaleView.remove(view);
+                }
+            });
+
+
+        }
+
+        if(evn == Constant.AMPLIFY){
+            TextView textView = view.findViewById(R.id.modify_dialog_scale_edit);
+            if(textView != null){
+                textView.setOnTouchListener(new View.OnTouchListener() {
+                    @Override
+                    public boolean onTouch(View view, MotionEvent motionEvent) {
+                        if(curText != null)
+                            curText.setTextColor(Color.WHITE);
+                        curText = textView;
+                        curText.setTextColor(Color.RED);
+                        eventType = evn;
+                        return false;
+                    }
+                });
+            }
+            ImageView imageView = view.findViewById(R.id.modify_dialog_scale_delete);
+            imageView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    windowManager.removeView(view);
+                    amplifyView.remove(view);
+                    allView.remove(view);
+                }
+            });
+
+
+        }
 
     }
+
+
+
 
 }
