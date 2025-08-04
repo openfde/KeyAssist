@@ -1,0 +1,133 @@
+[
+  [
+    {
+      "combination": false,
+      "combinationKeyCode": 0,
+      "eventType": 1,
+      "id": 26,
+      "keyValue": "G",
+      "keycode": 35,
+      "planId": 2,
+      "x": 1025,
+      "y": 953,
+      "baseObjId": 26
+    },
+    {
+      "combination": false,
+      "combinationKeyCode": 0,
+      "eventType": 1,
+      "id": 27,
+      "keyValue": "H",
+      "keycode": 36,
+      "planId": 2,
+      "x": 1177,
+      "y": 948,
+      "baseObjId": 27
+    },
+    {
+      "combination": false,
+      "combinationKeyCode": 0,
+      "eventType": 1,
+      "id": 28,
+      "keyValue": "J",
+      "keycode": 38,
+      "planId": 2,
+      "x": 1379,
+      "y": 942,
+      "baseObjId": 28
+    },
+    {
+      "combination": false,
+      "combinationKeyCode": 0,
+      "eventType": 1,
+      "id": 29,
+      "keyValue": "K",
+      "keycode": 39,
+      "planId": 2,
+      "x": 1425,
+      "y": 791,
+      "baseObjId": 29
+    },
+    {
+      "combination": false,
+      "combinationKeyCode": 0,
+      "eventType": 1,
+      "id": 30,
+      "keyValue": "L",
+      "keycode": 40,
+      "planId": 2,
+      "x": 1527,
+      "y": 633,
+      "baseObjId": 30
+    },
+    {
+      "combination": false,
+      "combinationKeyCode": 0,
+      "eventType": 1,
+      "id": 31,
+      "keyValue": ";",
+      "keycode": 0,
+      "planId": 2,
+      "x": 1678,
+      "y": 540,
+      "baseObjId": 31
+    },
+    {
+      "combination": false,
+      "combinationKeyCode": 0,
+      "eventType": 1,
+      "id": 32,
+      "keyValue": "\u0027",
+      "keycode": 0,
+      "planId": 2,
+      "x": 1671,
+      "y": 874,
+      "baseObjId": 32
+    }
+  ],
+  [
+    {
+      "downCombination": false,
+      "downCombinationKeyCode": 0,
+      "downKeyValue": "S",
+      "downKeycode": 47,
+      "eventType": 4,
+      "id": 5,
+      "leftCombination": false,
+      "leftCombinationKeyCode": 0,
+      "leftKeyValue": "A",
+      "leftKeycode": 29,
+      "planId": 2,
+      "rightCombination": false,
+      "rightCombinationKeyCode": 0,
+      "rightKeyValue": "D",
+      "rightKeycode": 32,
+      "upCombination": false,
+      "upCombinationKeyCode": 0,
+      "upKeyValue": "W",
+      "upKeycode": 51,
+      "x": 338,
+      "y": 776,
+      "baseObjId": 5
+    }
+  ],
+  [],
+  [
+    {
+      "cursorSwitch": true,
+      "id": 5,
+      "planId": 2,
+      "baseObjId": 5
+    }
+  ],
+  [],
+  [],
+  [
+    {
+      "dialogSwitch": true,
+      "id": 4,
+      "planId": 2,
+      "baseObjId": 4
+    }
+  ]
+]

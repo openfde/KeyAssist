@@ -357,17 +357,17 @@ public class FileUtil {
 
     // 预置json，英雄联盟
     public static void league(Context context)  {
-        List<Plan> plans = LitePal.where("planName  = ?", "王者荣耀").find(Plan.class);
+        List<Plan> plans = LitePal.where("planName  = ?", "LOL").find(Plan.class);
         if(plans != null && !plans.isEmpty()){
             return;
         }
         try{
             AssetManager assetManager = context.getAssets();
-            InputStream inputStream = assetManager.open("Honor.json");
+            InputStream inputStream = assetManager.open("LOL.json");
             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
             JsonElement jsonElement = JsonParser.parseReader(bufferedReader);
             Plan plan = new Plan();
-            plan.setPlanName("王者荣耀");
+            plan.setPlanName("LOL");
             plan.save();
             if(jsonElement.isJsonArray()){
                 JsonArray jsonArray = jsonElement.getAsJsonArray(); // 全部对象
@@ -378,11 +378,11 @@ public class FileUtil {
                 jsonToScale(jsonArray.get(4).getAsJsonArray(),plan.getId());
                 jsonToAmplify(jsonArray.get(5).getAsJsonArray(),plan.getId());
             }
-            SharedPreferences.Editor data = context.getSharedPreferences("data", Context.MODE_PRIVATE).edit();
-            String packageName = "com.tencent.tmgp.sgame.SGameActivity";
-            String bounds = "338 141 1449 871";
-            data.putString(packageName+plan.getPlanName(),bounds);
-            data.apply();
+//            SharedPreferences.Editor data = context.getSharedPreferences("data", Context.MODE_PRIVATE).edit();
+//            String packageName = "com.tencent.tmgp.sgame.SGameActivity";
+//            String bounds = "338 141 1449 871";
+//            data.putString(packageName+plan.getPlanName(),bounds);
+//            data.apply();
         }catch (Exception e){
 
         }

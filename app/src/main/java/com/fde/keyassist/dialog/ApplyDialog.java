@@ -259,16 +259,17 @@ public class ApplyDialog {
     }
 
     public Boolean applyDialog(){
-        List<DialogEntity> dialogEntities = new ArrayList<>();
-        List<Plan> plans = LitePal.where("planName = ?",planName).find(Plan.class);
-        if(plans != null && plans.size() >=1){
-            Plan plan = plans.get(0);
-            dialogEntities = LitePal.where("planId = ?", plan.getId().toString()).find(DialogEntity.class);
-        }
-        if(dialogEntities != null && !dialogEntities.isEmpty()){
-            return dialogEntities.get(0).getDialogSwitch();
-        }
-        return false;
+        return true;
+//        List<DialogEntity> dialogEntities = new ArrayList<>();
+//        List<Plan> plans = LitePal.where("planName = ?",planName).find(Plan.class);
+//        if(plans != null && plans.size() >=1){
+//            Plan plan = plans.get(0);
+//            dialogEntities = LitePal.where("planId = ?", plan.getId().toString()).find(DialogEntity.class);
+//        }
+//        if(dialogEntities != null && !dialogEntities.isEmpty()){
+//            return dialogEntities.get(0).getDialogSwitch();
+//        }
+//        return false;
     }
 
 

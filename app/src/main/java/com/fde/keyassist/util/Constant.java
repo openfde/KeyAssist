@@ -11,5 +11,10 @@ public class Constant {
     public final static Integer DIRECTION_KEY_RIGHT = 8;
     public static final Integer SCALE = 9;
     public static final Integer AMPLIFY = 10;
-    public static String planName = "王者荣耀";
+    public static String planName = "LOL";
+
+    public static final int DIRECTION_EVENT = 1;
+    public static final int DIRECTION_EVENT_DOWN = 2;
+    public static final int DIRECTION_EVENT_MOVE = 3;
+    public static final int DIRECTION_EVENT_UP = 4;
 }

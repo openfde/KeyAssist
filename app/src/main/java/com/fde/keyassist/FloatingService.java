@@ -196,6 +196,7 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
         floatParams.y = heigh-100;
         floatWindow.updateViewLayout(floatView,floatParams);
 //        openTaskBar();
+        DirectionController.getInstance().startWorkThread();
     }
 
 
@@ -283,6 +284,7 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
             @Override
             public boolean onKey(View view, int i, KeyEvent keyEvent) {
                 int[] pos = getPosition(i,String.valueOf(keyEvent.getDisplayLabel()));
+                Log.d(TAG, "onKey(): eventType :" + eventType + ", keyEvent :" + keyEvent + "");
                 if(pos[0] != -1 && pos[1]!=-1) {
                     if (eventType == Constant.TAP_CLICK_EVENT) {
                         EventUtils.tapClick(pos[0], pos[1]);
