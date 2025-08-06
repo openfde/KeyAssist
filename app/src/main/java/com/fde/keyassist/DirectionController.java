@@ -139,32 +139,32 @@ public class DirectionController {
     }
 
     private void processDirection(DirectionEventWrapper eventWrapper, int direction) {
-        Log.d(TAG, "processDirection():  eventWrapper :" + eventWrapper + ", direction :" + direction + "");
+        Log.d(TAG, "processDirection(): direction :" + printDIRECTION(direction) + " eventWrapper:" + eventWrapper);
         if(DIRECTION == IDLE && direction != IDLE ){
             int delay = workHandler.hasMessages(DIRECTION_EVENT_MOVE) ? DELAY_TIME : 0;
             Message messageDown = Message.obtain();
             messageDown.obj = eventWrapper;
             messageDown.what = DIRECTION_EVENT_DOWN;
-            workHandler.sendMessageDelayed(messageDown, delay);
+            workHandler.sendMessage(messageDown);
             Message message = Message.obtain();
             message.obj = eventWrapper;
             message.arg1 = direction;
             message.what = DIRECTION_EVENT_MOVE;
-            workHandler.sendMessageDelayed(message, delay + DELAY_TIME);
+            workHandler.sendMessage(message);
         } else if(direction == IDLE){
             int delay = workHandler.hasMessages(DIRECTION_EVENT_MOVE) ? DELAY_TIME : 0;
             Message messageDown = Message.obtain();
             messageDown.obj = eventWrapper;
             messageDown.arg1 = direction;
             messageDown.what = DIRECTION_EVENT_UP;
-            workHandler.sendMessageDelayed(messageDown, delay);
+            workHandler.sendMessage(messageDown);
         } else {
             int delay = workHandler.hasMessages(DIRECTION_EVENT_MOVE) ? DELAY_TIME : 0;
             Message message = Message.obtain();
             message.obj = eventWrapper;
             message.arg1 = direction;
             message.what = DIRECTION_EVENT_MOVE;
-            workHandler.sendMessageDelayed(message, delay);
+            workHandler.sendMessage(message);
 //            EventUtils.Pointer pointer = computeOffset(direction);
 //            current.x =  center.x + pointer.x;
 //            current.y =  center.y + pointer.y;
@@ -173,14 +173,38 @@ public class DirectionController {
 //                    current.x, current.y, 0.5f,
 //                    0);
         }
-        Log.d(TAG, "processDirection: directon:" + DIRECTION + " current:" + current);
+        Log.d(TAG, "processDirection: directon:" + printDIRECTION(DIRECTION) + " current:" + current);
+    }
+
+    private String printDIRECTION(int d){
+        switch (d){
+            case IDLE:
+                return "IDLE";
+            case DIRECTION_DOWN:
+                return "DIRECTION_DOWN";
+            case DIRECTION_UP:
+                return "DIRECTION_UP";
+            case DIRECTION_RIGHT:
+                return "DIRECTION_RIGHT";
+            case DIRECTION_LEFT:
+                return "DIRECTION_LEFT";
+            case DIRECTION_UP_LEFT:
+                return "DIRECTION_UP_LEFT";
+            case DIRECTION_DOWN_LEFT:
+                return "DIRECTION_DOWN_LEFT";
+            case DIRECTION_UP_RIGHT:
+                return "DIRECTION_UP_RIGHT";
+            case DIRECTION_DOWN_RIGHT:
+                return "DIRECTION_DOWN_RIGHT";
+        }
+        return "IDLE";
     }
 
     private void updateEventWrapper(DirectionEventWrapper eventWrapper) {
         int eventType = eventWrapper.eventType;
         int index = eventType - 5;
-         if(eventWrapper.keyEvent.getAction() == ACTION_UP){
-             mDirectionWrappers[index] = null;
+        if(eventWrapper.keyEvent.getAction() == ACTION_UP){
+            mDirectionWrappers[index] = null;
         } else if(eventWrapper.keyEvent.getAction() == ACTION_DOWN){
 //             if(index == 0){
 //                 mDirectionWrappers[1] = null;
@@ -194,11 +218,33 @@ public class DirectionController {
 //             if(index == 3){
 //                 mDirectionWrappers[2] = null;
 //             }
-             lastIndex = index;
-             mDirectionWrappers[index] = eventWrapper;
-         } else {
-             mDirectionWrappers[index] = eventWrapper;
+            lastIndex = index;
+            mDirectionWrappers[index] = eventWrapper;
+        } else {
+            mDirectionWrappers[index] = eventWrapper;
         }
+        int count = 0;
+        String direct = "key pressed:";
+        if (mDirectionWrappers[0] != null){
+            direct += "+ up ";
+            count++;
+        }
+        if (mDirectionWrappers[1] != null){
+            direct += "+ down ";
+            count++;
+        }
+        if (mDirectionWrappers[2] != null){
+            direct += "+ left ";
+            count++;
+        }
+        if (mDirectionWrappers[3] != null){
+            direct += "+ right ";
+            count++;
+        }
+        if(count == 1){
+            lastIndex = -1;
+        }
+        Log.d(TAG, "updateEventWrapper: direct:" + direct);
     }
 
     private int calculateDirection() {
