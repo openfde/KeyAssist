@@ -8,8 +8,10 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.PixelFormat;
 import android.os.Build;
+import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.view.Gravity;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.WindowManager;
@@ -134,7 +136,11 @@ public class ApplyDialog {
                 params.y = entity.getY() - params.height/2;
                 if(entity.getKeyValue() != null && !entity.getKeyValue().isEmpty()){
                     TextView apply_dialog_tap_click_edit = view.findViewById(R.id.apply_dialog_tap_click_edit);
-                    apply_dialog_tap_click_edit.setText(entity.getKeyValue());
+                    if(TextUtils.equals(entity.getKeyValue()," ")){
+                        apply_dialog_tap_click_edit.setText("Space");
+                    } else {
+                        apply_dialog_tap_click_edit.setText(entity.getKeyValue());
+                    }
                 }
                 windowManager.addView(view,params);
                 allView.add(view);
@@ -259,17 +265,16 @@ public class ApplyDialog {
     }
 
     public Boolean applyDialog(){
-        return true;
-//        List<DialogEntity> dialogEntities = new ArrayList<>();
-//        List<Plan> plans = LitePal.where("planName = ?",planName).find(Plan.class);
-//        if(plans != null && plans.size() >=1){
-//            Plan plan = plans.get(0);
-//            dialogEntities = LitePal.where("planId = ?", plan.getId().toString()).find(DialogEntity.class);
-//        }
-//        if(dialogEntities != null && !dialogEntities.isEmpty()){
-//            return dialogEntities.get(0).getDialogSwitch();
-//        }
-//        return false;
+        List<DialogEntity> dialogEntities = new ArrayList<>();
+        List<Plan> plans = LitePal.where("planName = ?",planName).find(Plan.class);
+        if(plans != null && plans.size() >=1){
+            Plan plan = plans.get(0);
+            dialogEntities = LitePal.where("planId = ?", plan.getId().toString()).find(DialogEntity.class);
+        }
+        if(dialogEntities != null && !dialogEntities.isEmpty()){
+            return dialogEntities.get(0).getDialogSwitch();
+        }
+        return false;
     }
 
 

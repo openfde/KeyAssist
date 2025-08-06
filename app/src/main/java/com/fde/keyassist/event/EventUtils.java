@@ -54,7 +54,7 @@ public class EventUtils {
         MotionEvent event = MotionEvent.obtain(downTime, when, action, x, y, pressure, DEFAULT_SIZE,
                 DEFAULT_META_STATE, DEFAULT_PRECISION_X, DEFAULT_PRECISION_Y,
                 4, DEFAULT_EDGE_FLAGS);
-        event.setSource(0xd002);
+        event.setSource(inputSource);
         if (displayId == INVALID_DISPLAY && (inputSource & InputDevice.SOURCE_CLASS_POINTER) != 0) {
             displayId = DEFAULT_DISPLAY;
         }

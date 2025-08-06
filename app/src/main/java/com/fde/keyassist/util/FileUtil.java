@@ -377,6 +377,7 @@ public class FileUtil {
                 jsonToCursorEntity(jsonArray.get(3).getAsJsonArray(),plan.getId());
                 jsonToScale(jsonArray.get(4).getAsJsonArray(),plan.getId());
                 jsonToAmplify(jsonArray.get(5).getAsJsonArray(),plan.getId());
+                jsonToDialog(jsonArray.get(6).getAsJsonArray(),plan.getId());
             }
 //            SharedPreferences.Editor data = context.getSharedPreferences("data", Context.MODE_PRIVATE).edit();
 //            String packageName = "com.tencent.tmgp.sgame.SGameActivity";

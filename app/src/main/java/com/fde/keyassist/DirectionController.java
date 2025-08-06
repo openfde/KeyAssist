@@ -72,6 +72,7 @@ public class DirectionController {
     private Handler workHandler;
 
     private volatile boolean batchDroped;
+    private int lastIndex = 0;
 
     public static DirectionController getInstance(){
         return SingletonHolder.INSTANCE;
@@ -139,7 +140,7 @@ public class DirectionController {
 
     private void processDirection(DirectionEventWrapper eventWrapper, int direction) {
         Log.d(TAG, "processDirection():  eventWrapper :" + eventWrapper + ", direction :" + direction + "");
-        if(DIRECTION == IDLE && direction != IDLE && eventWrapper.keyEvent.getRepeatCount() ==0 ){
+        if(DIRECTION == IDLE && direction != IDLE ){
             int delay = workHandler.hasMessages(DIRECTION_EVENT_MOVE) ? DELAY_TIME : 0;
             Message messageDown = Message.obtain();
             messageDown.obj = eventWrapper;
@@ -181,18 +182,19 @@ public class DirectionController {
          if(eventWrapper.keyEvent.getAction() == ACTION_UP){
              mDirectionWrappers[index] = null;
         } else if(eventWrapper.keyEvent.getAction() == ACTION_DOWN){
-             if(index == 0){
-                 mDirectionWrappers[1] = null;
-             }
-             if(index == 1){
-                 mDirectionWrappers[0] = null;
-             }
-             if(index == 2){
-                 mDirectionWrappers[3] = null;
-             }
-             if(index == 3){
-                 mDirectionWrappers[2] = null;
-             }
+//             if(index == 0){
+//                 mDirectionWrappers[1] = null;
+//             }
+//             if(index == 1){
+//                 mDirectionWrappers[0] = null;
+//             }
+//             if(index == 2){
+//                 mDirectionWrappers[3] = null;
+//             }
+//             if(index == 3){
+//                 mDirectionWrappers[2] = null;
+//             }
+             lastIndex = index;
              mDirectionWrappers[index] = eventWrapper;
          } else {
              mDirectionWrappers[index] = eventWrapper;
@@ -200,17 +202,18 @@ public class DirectionController {
     }
 
     private int calculateDirection() {
+
         int direction = IDLE;
-        if(mDirectionWrappers[0] != null){
+        if(mDirectionWrappers[0] != null && lastIndex != 1){
             direction += DIRECTION_UP;
         }
-        if(mDirectionWrappers[1] != null){
+        if(mDirectionWrappers[1] != null && lastIndex != 0){
             direction += DIRECTION_DOWN;
         }
-        if(mDirectionWrappers[2] != null){
+        if(mDirectionWrappers[2] != null && lastIndex != 3){
             direction += DIRECTION_LEFT;
         }
-        if(mDirectionWrappers[3] != null){
+        if(mDirectionWrappers[3] != null && lastIndex != 2 ){
             direction += DIRECTION_RIGHT;
         }
         if(direction == DIRECTION_UP|| direction == DIRECTION_DOWN ||
