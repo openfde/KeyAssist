@@ -11,10 +11,12 @@ import android.app.ActivityTaskManager;
 
 import android.app.Service;
 import android.app.TaskInfo;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.sqlite.SQLiteDatabase;
@@ -24,7 +26,9 @@ import android.graphics.Rect;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
 import android.os.Environment;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Looper;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.os.ParcelableParcel;
@@ -173,7 +177,8 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
     private ImageView key_mapping_close_dialog;
 
     private Boolean hide = false;
-
+    IntentFilter taskClickAction;
+    Handler mainHandler = new Handler(Looper.getMainLooper());
 
 
     @Nullable
@@ -197,10 +202,29 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
         floatWindow.updateViewLayout(floatView,floatParams);
 //        openTaskBar();
         DirectionController.getInstance().startWorkThread();
+        taskClickAction = new IntentFilter("task_click_action");
+        registerReceiver(taskClickReceiver, taskClickAction);
     }
 
+    private BroadcastReceiver taskClickReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Log.d(TAG, "onReceive() called with: context = [" + context + "], intent = [" + intent + "]");
+            mainHandler.post(() -> {
+                endListenerKey();
+            });
 
+            mainHandler.postDelayed(() -> {
+                startListenerKey();
+            }, 200);
+        }
+    };
 
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        unregisterReceiver(taskClickReceiver);
+    }
 
     @SuppressLint("ClickableViewAccessibility")
     private void showFloatView() {
@@ -256,7 +280,7 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
 //                | View.SYSTEM_UI_FLAG_FULLSCREEN
 //                | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
 //
-//        floatWindow.updateViewLayout(floatView,floatParams);
+        floatWindow.updateViewLayout(floatView,floatParams);
 
 
 
@@ -330,7 +354,8 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
                         }
                     }
                 }
-                return true;
+                Log.d(TAG, "onKey: ");
+                return false;
             }
         });
     }
@@ -839,58 +864,7 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
                  // 应用和取消
              case R.id.key_mapping_apply_and_cancel:
                  // 应用
-                 if(!isApply && editAndCancal){
-                     resizeTask();
-                     // 退出和编辑不可使用
-                     exitClick = false;
-                     editClick = false;
-                     key_mapping_edit_cancel.setBackgroundResource(R.drawable.key_mapping_cancel_no_click);
-                     key_mapping_exit.setBackgroundResource(R.drawable.key_mapping_apply_no_click);
-
-                     startListenerKey();
-                     if(applyDialog != null){
-                         applyDialog.cancal();
-                     }
-                     applyDialog = new ApplyDialog(Constant.planName,this);
-                     keyMappingEntities = applyDialog.applyTapClick();
-                     directMappingEntities = applyDialog.applyDirect();
-                     doubleClickMappingEntities = applyDialog.applyDoubleClick();
-                     scaleMappingEntities = applyDialog.applyScaleClick();
-                     amplifyMappingEntities = applyDialog.applyAmplifyClick();
-                     Boolean b = applyDialog.applyCursor();
-                     if(b){
-                         openCursor();
-                     }else{
-                         closeCursor();
-                     }
-                     Boolean dialog = applyDialog.applyDialog();
-                     if(dialog){
-                         openTaskBar();
-                     }else{
-                         closeTaskbar();
-                     }
-                     isApply = true;
-                     isMainWindow = false;
-                     key_mapping_apply_and_cancel.setText(getString(R.string.cancel));
-                     mainWindow.removeView(mainView);
-                     Adsorption(floatParams);
-                     // 取消
-                 }else{
-                     if(applyDialog!=null) {
-                         if(!applyClick){
-                             break;
-                         }
-                         key_mapping_edit_cancel.setBackgroundResource(R.drawable.key_mapping_cancel);
-                         key_mapping_exit.setTextColor(Color.parseColor("#FFFFFF"));
-                         exitClick = true;
-                         editClick = true;
-                         endListenerKey();
-                         applyDialog.cancal();
-                         isApply = false;
-                         key_mapping_apply_and_cancel.setText(getString(R.string.apply));
-                         closeCursor();
-                     }
-                 }
+                 peformApplyClick();
                  break;
              // 隐藏和保存
              case R.id.key_mapping_hide_save:
@@ -959,6 +933,60 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
 
          }
 
+    private void peformApplyClick() {
+        if(!isApply && editAndCancal){
+            resizeTask();
+            // 退出和编辑不可使用
+            exitClick = false;
+            editClick = false;
+            key_mapping_edit_cancel.setBackgroundResource(R.drawable.key_mapping_cancel_no_click);
+            key_mapping_exit.setBackgroundResource(R.drawable.key_mapping_apply_no_click);
+
+            startListenerKey();
+            if(applyDialog != null){
+                applyDialog.cancal();
+            }
+            applyDialog = new ApplyDialog(Constant.planName,this);
+            keyMappingEntities = applyDialog.applyTapClick();
+            directMappingEntities = applyDialog.applyDirect();
+            doubleClickMappingEntities = applyDialog.applyDoubleClick();
+            scaleMappingEntities = applyDialog.applyScaleClick();
+            amplifyMappingEntities = applyDialog.applyAmplifyClick();
+            Boolean b = applyDialog.applyCursor();
+            if(b){
+                openCursor();
+            }else{
+                closeCursor();
+            }
+            Boolean dialog = applyDialog.applyDialog();
+            if(dialog){
+                openTaskBar();
+            }else{
+                closeTaskbar();
+            }
+            isApply = true;
+            isMainWindow = false;
+            key_mapping_apply_and_cancel.setText(getString(R.string.cancel));
+            mainWindow.removeView(mainView);
+            Adsorption(floatParams);
+            // 取消
+        }else{
+            if(applyDialog!=null) {
+                if(!applyClick){
+                    return;
+                }
+                key_mapping_edit_cancel.setBackgroundResource(R.drawable.key_mapping_cancel);
+                key_mapping_exit.setTextColor(Color.parseColor("#FFFFFF"));
+                exitClick = true;
+                editClick = true;
+                endListenerKey();
+                applyDialog.cancal();
+                isApply = false;
+                key_mapping_apply_and_cancel.setText(getString(R.string.apply));
+                closeCursor();
+            }
+        }
+    }
 
 
     @Override
@@ -1220,32 +1248,32 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
     public void openTaskBar(){
 //        floatParams.flags = floatParams.flags | WindowManager.LayoutParams.FLAG_FULLSCREEN;
 //        floatWindow.updateViewLayout(floatView, floatParams);
-        ViewRootImpl obj = (ViewRootImpl) floatView.getParent();
-        Class c = obj.getClass();
-        try{
-            Field field = c.getDeclaredField("mWindowAttributes");
-            WindowManager.LayoutParams params = (WindowManager.LayoutParams)field.get(obj);
-            params.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_IMMERSIVE
-                    | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-        floatWindow.updateViewLayout(floatView,floatParams);
+//        ViewRootImpl obj = (ViewRootImpl) floatView.getParent();
+//        Class c = obj.getClass();
+//        try{
+//            Field field = c.getDeclaredField("mWindowAttributes");
+//            WindowManager.LayoutParams params = (WindowManager.LayoutParams)field.get(obj);
+//            params.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_IMMERSIVE
+//                    | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
+//        }catch (Exception e){
+//            e.printStackTrace();
+//        }
+//        floatWindow.updateViewLayout(floatView,floatParams);
     }
 
 
     public void closeTaskbar(){
-        ViewRootImpl obj = (ViewRootImpl) floatView.getParent();
-        Class c = obj.getClass();
-        try{
-            Field field = c.getDeclaredField("mWindowAttributes");
-            WindowManager.LayoutParams params = (WindowManager.LayoutParams)field.get(obj);
-            params.systemUiVisibility =params.systemUiVisibility & ~( View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_IMMERSIVE
-                    | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-        floatWindow.updateViewLayout(floatView,floatParams);
+//        ViewRootImpl obj = (ViewRootImpl) floatView.getParent();
+//        Class c = obj.getClass();
+//        try{
+//            Field field = c.getDeclaredField("mWindowAttributes");
+//            WindowManager.LayoutParams params = (WindowManager.LayoutParams)field.get(obj);
+//            params.systemUiVisibility =params.systemUiVisibility & ~( View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_IMMERSIVE
+//                    | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
+//        }catch (Exception e){
+//            e.printStackTrace();
+//        }
+//        floatWindow.updateViewLayout(floatView,floatParams);
     }
 
 }
