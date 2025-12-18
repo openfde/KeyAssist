@@ -1040,8 +1040,8 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
             DataOutputStream os = new DataOutputStream(process.getOutputStream());
 
             os.writeBytes("su\n");
-            os.writeBytes("/system/bin/setprop fde.show_wayland_cursor true\n");
-            os.writeBytes("/system/bin/setprop fde.click_as_touch true\n");
+//            os.writeBytes("/system/bin/setprop fde.show_wayland_cursor true\n");
+//            os.writeBytes("/system/bin/setprop fde.click_as_touch true\n");
             os.writeBytes("/system/bin/setprop fde.inject_as_touch true\n");
             os.writeBytes("exit\n");
             os.flush();
@@ -1064,8 +1064,8 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
         try {
             Process process = Runtime.getRuntime().exec("/system/bin/sh");
             DataOutputStream os = new DataOutputStream(process.getOutputStream());
-            os.writeBytes("setprop fde.show_wayland_cursor true\n");
-            os.writeBytes("setprop fde.click_as_touch false\n");
+//            os.writeBytes("setprop fde.show_wayland_cursor true\n");
+//            os.writeBytes("setprop fde.click_as_touch false\n");
             os.writeBytes("setprop fde.inject_as_touch false\n");
             os.writeBytes("exit\n");
             os.flush();
