@@ -259,6 +259,7 @@
         android:layout_below="@+id/key_mapping_control_2"
         android:orientation="horizontal"
         android:layout_width="match_parent"
+        android:visibility="gone"
         android:layout_height="wrap_content">
 
         <LinearLayout
