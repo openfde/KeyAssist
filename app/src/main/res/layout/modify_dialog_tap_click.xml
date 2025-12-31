@@ -10,8 +10,8 @@
         android:layout_above="@+id/modify_dialog_tap_click_edit"
         android:src="@drawable/modify_dialog_tap_click_delete"
         android:id="@+id/modify_dialog_tap_click_delete"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
+        android:layout_width="15dp"
+        android:layout_height="15dp"/>
 
     <TextView
         android:gravity="center"

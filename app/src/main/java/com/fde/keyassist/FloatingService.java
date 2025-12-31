@@ -230,7 +230,9 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
     private void showFloatView() {
         floatView = LayoutInflater.from(this).inflate(R.layout.background_window,null,false);
         floatParams = createFloatLayoutParams();
-        floatWindow = createFloatWindow(50, 50, floatView, floatParams);
+        floatWindow = createFloatWindow(getResources().getDimensionPixelSize(R.dimen.float_view_ball_size),
+                getResources().getDimensionPixelSize(R.dimen.float_view_ball_size),
+                floatView, floatParams);
 
         dragView(floatView,floatWindow,floatParams,"showKeyMapping");
         hoverShowView(floatView);
@@ -310,8 +312,11 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
                 int[] pos = getPosition(i,String.valueOf(keyEvent.getDisplayLabel()));
                 Log.d(TAG, "onKey(): eventType :" + eventType + ", keyEvent :" + keyEvent + "");
                 if(pos[0] != -1 && pos[1]!=-1) {
-                    if (eventType == Constant.TAP_CLICK_EVENT) {
-                        EventUtils.tapClick(pos[0], pos[1]);
+                    if (eventType == Constant.TAP_CLICK_EVENT ) {
+                        if(keyEvent.getAction() == KeyEvent.ACTION_DOWN){
+                            EventUtils.tapClick(pos[0], pos[1]);
+                        }
+                        return true;
                     } else if (eventType == Constant.DIRECTION_KEY_UP
                             || eventType == Constant.DIRECTION_KEY_LEFT
                             || eventType == Constant.DIRECTION_KEY_DOWN
@@ -369,7 +374,8 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
         }
         mainView = LayoutInflater.from(this).inflate(R.layout.key_mapping,null,false);
         mainParams = createLayoutParams();
-        mainWindow = createWindow(350, 450, mainView, mainParams);
+        mainWindow = createWindow(getResources().getDimensionPixelSize(R.dimen.control_main_view_width),
+                getResources().getDimensionPixelSize(R.dimen.control_main_view_height), mainView, mainParams);
 //        dragView(mainView,mainWindow,mainParams,"");
         dragWindowView(mainView,mainWindow,mainParams,"");
 //        Button key_mapping_click = mainView.findViewById(R.id.key_mapping_tap_click);
@@ -779,17 +785,14 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
                  PlaySpinnerAdapter adapter = new PlaySpinnerAdapter(plans,key_mapping_plan_text);
                  recyclerView.setAdapter(adapter);
 
-                 dropdown_menu_export.setOnClickListener(new View.OnClickListener() {
-                     @Override
-                     public void onClick(View view) {
-                         List<String> list = new ArrayList<>();
-                         List<Plan> planList = LitePal.findAll(Plan.class);
-                         for(Plan plan : planList){
-                             list.add(plan.getPlanName());
-                         }
-                         FileUtil.exportData(list,getApplication());
-                         Toast.makeText(getApplication(),"成功导出文件到根目录keyAssist目录下",Toast.LENGTH_SHORT).show();
+                 dropdown_menu_export.setOnClickListener(view1 -> {
+                     List<String> list = new ArrayList<>();
+                     List<Plan> planList = LitePal.findAll(Plan.class);
+                     for(Plan plan : planList){
+                         list.add(plan.getPlanName());
                      }
+                     FileUtil.exportData(list,getApplication());
+                     Toast.makeText(getApplication(),"成功导出文件到根目录keyAssist目录下",Toast.LENGTH_SHORT).show();
                  });
 
                  dropdown_menu_import.setOnClickListener(new View.OnClickListener(){

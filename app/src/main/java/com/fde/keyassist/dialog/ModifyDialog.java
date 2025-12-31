@@ -167,8 +167,8 @@ public class ModifyDialog extends BaseServiceDialog implements View.OnClickListe
         View view = LayoutInflater.from(getContext()).inflate(R.layout.modify_dialog_tap_click,null,false);
 //                curText = view.findViewById(R.id.modify_dialog_tap_click_edit);
 //                curHintText = view.findViewById(R.id.modify_dialog_tap_click_hint);
-        layoutParams.width = 70;
-        layoutParams.height = 70;
+        layoutParams.width = getContext().getResources().getDimensionPixelSize(R.dimen.modify_dialog_tap_click_size);
+        layoutParams.height = getContext().getResources().getDimensionPixelSize(R.dimen.modify_dialog_tap_click_size);
         layoutParams.x = (int)event.getRawX() - layoutParams.width/2;
         layoutParams.y = (int)event.getRawY() - layoutParams.height/2;
         windowManager.addView(view,layoutParams);
@@ -188,8 +188,8 @@ public class ModifyDialog extends BaseServiceDialog implements View.OnClickListe
         View view = LayoutInflater.from(getContext()).inflate(R.layout.modify_dialog_amplify,null,false);
 //                curText = view.findViewById(R.id.modify_dialog_tap_click_edit);
 //                curHintText = view.findViewById(R.id.modify_dialog_tap_click_hint);
-        layoutParams.width = 70;
-        layoutParams.height = 70;
+        layoutParams.width = getContext().getResources().getDimensionPixelSize(R.dimen.modify_dialog_tap_click_size);
+        layoutParams.height = getContext().getResources().getDimensionPixelSize(R.dimen.modify_dialog_tap_click_size);
         layoutParams.x = (int)event.getRawX() - layoutParams.width/2;
         layoutParams.y = (int)event.getRawY() - layoutParams.height/2;
         windowManager.addView(view,layoutParams);
@@ -209,8 +209,8 @@ public class ModifyDialog extends BaseServiceDialog implements View.OnClickListe
         View view = LayoutInflater.from(getContext()).inflate(R.layout.modify_dialog_scale,null,false);
 //                curText = view.findViewById(R.id.modify_dialog_tap_click_edit);
 //                curHintText = view.findViewById(R.id.modify_dialog_tap_click_hint);
-        layoutParams.width = 70;
-        layoutParams.height = 70;
+        layoutParams.width = getContext().getResources().getDimensionPixelSize(R.dimen.modify_dialog_tap_click_size);
+        layoutParams.height = getContext().getResources().getDimensionPixelSize(R.dimen.modify_dialog_tap_click_size);
         layoutParams.x = (int)event.getRawX() - layoutParams.width/2;
         layoutParams.y = (int)event.getRawY() - layoutParams.height/2;
         windowManager.addView(view,layoutParams);
@@ -232,8 +232,8 @@ public class ModifyDialog extends BaseServiceDialog implements View.OnClickListe
         View view = LayoutInflater.from(getContext()).inflate(R.layout.modify_dialog_double_click,null,false);
 //                curText = view.findViewById(R.id.modify_dialog_tap_click_edit);
 //                curHintText = view.findViewById(R.id.modify_dialog_tap_click_hint);
-        layoutParams.width = 80;
-        layoutParams.height = 70;
+        layoutParams.width = getContext().getResources().getDimensionPixelSize(R.dimen.modify_dialog_tap_click_size);
+        layoutParams.height = getContext().getResources().getDimensionPixelSize(R.dimen.modify_dialog_tap_click_size);
         layoutParams.x = (int)event.getRawX() - layoutParams.width/2;
         layoutParams.y = (int)event.getRawY() - layoutParams.height/2;
         windowManager.addView(view,layoutParams);
@@ -252,8 +252,8 @@ public class ModifyDialog extends BaseServiceDialog implements View.OnClickListe
     public void createDirectClick(MotionEvent event){
         // 方向键
         View view = LayoutInflater.from(getContext()).inflate(R.layout.modify_dialog_direct_click,null,false);
-        layoutParams.width = 80;
-        layoutParams.height = 120;
+        layoutParams.width = getContext().getResources().getDimensionPixelSize(R.dimen.modify_dialog_direct_click_size);
+        layoutParams.height = getContext().getResources().getDimensionPixelSize(R.dimen.modify_dialog_direct_click_size);
         layoutParams.x = (int)event.getRawX() - layoutParams.width/2;
         layoutParams.y = (int)event.getRawY() - layoutParams.height/2;
         windowManager.addView(view,layoutParams);
@@ -726,6 +726,8 @@ public class ModifyDialog extends BaseServiceDialog implements View.OnClickListe
             allView.add(view);
             eventType = entity.getEventType();
             dragView(view,"");
+            layoutParams.width = getContext().getResources().getDimensionPixelSize(R.dimen.modify_dialog_tap_click_size);
+            layoutParams.height = getContext().getResources().getDimensionPixelSize(R.dimen.modify_dialog_tap_click_size);
             layoutParams.x = entity.getX() - layoutParams.width/2;
             layoutParams.y = entity.getY() - layoutParams.height/2;
             windowManager.addView(view,layoutParams);
@@ -751,8 +753,8 @@ public class ModifyDialog extends BaseServiceDialog implements View.OnClickListe
             allView.add(view);
             eventType = entity.getEventType();
             dragView(view,"");
-            layoutParams.width = 70;
-            layoutParams.height = 70;
+            layoutParams.width = getContext().getResources().getDimensionPixelSize(R.dimen.modify_dialog_tap_click_size);
+            layoutParams.height = getContext().getResources().getDimensionPixelSize(R.dimen.modify_dialog_tap_click_size);
             layoutParams.x = entity.getX() - layoutParams.width/2;
             layoutParams.y = entity.getY() - layoutParams.height/2;
             windowManager.addView(view,layoutParams);
@@ -778,8 +780,8 @@ public class ModifyDialog extends BaseServiceDialog implements View.OnClickListe
             allView.add(view);
             eventType = entity.getEventType();
             dragView(view,"");
-            layoutParams.width = 70;
-            layoutParams.height = 70;
+            layoutParams.width = getContext().getResources().getDimensionPixelSize(R.dimen.modify_dialog_tap_click_size);
+            layoutParams.height = getContext().getResources().getDimensionPixelSize(R.dimen.modify_dialog_tap_click_size);
             layoutParams.x = entity.getX() - layoutParams.width/2;
             layoutParams.y = entity.getY() - layoutParams.height/2;
             windowManager.addView(view,layoutParams);
@@ -789,9 +791,8 @@ public class ModifyDialog extends BaseServiceDialog implements View.OnClickListe
     }
 
     public void showDirectEvent(){
-        layoutParams.width = 80;
-        layoutParams.height = 100;
-
+        layoutParams.width = getContext().getResources().getDimensionPixelSize(R.dimen.modify_dialog_direct_click_size);
+        layoutParams.height = getContext().getResources().getDimensionPixelSize(R.dimen.modify_dialog_direct_click_size);
         List<DirectMappingEntity> directMappingEntities = new ArrayList<>();
         // 取出planId
         List<Plan> plans = LitePal.where("planName = ?",planName).find(Plan.class);
@@ -840,8 +841,8 @@ public class ModifyDialog extends BaseServiceDialog implements View.OnClickListe
             allView.add(view);
             eventType = entity.getEventType();
             dragView(view,"");
-            layoutParams.width = 70;
-            layoutParams.height = 70;
+            layoutParams.width = getContext().getResources().getDimensionPixelSize(R.dimen.modify_dialog_tap_click_size);
+            layoutParams.height = getContext().getResources().getDimensionPixelSize(R.dimen.modify_dialog_tap_click_size);
             layoutParams.x = entity.getX() - layoutParams.width/2;
             layoutParams.y = entity.getY() - layoutParams.height/2;
             windowManager.addView(view,layoutParams);

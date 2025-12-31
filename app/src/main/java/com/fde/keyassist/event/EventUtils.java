@@ -46,12 +46,13 @@ public class EventUtils {
     public static void injectMotionEvent(int inputSource, int action, long downTime, long when,
                                          float x, float y, float pressure, int displayId) {
         Log.d(TAG, "injectMotionEvent , x :" + x + ", y :" + y + " inputSource :"+ inputSource + ", action :" + action + ", downTime :" + downTime + ", when :" + when  + ", pressure :" + pressure + ", displayId :" + displayId + "");
+        long now = SystemClock.uptimeMillis();
         final float DEFAULT_SIZE = 1.0f;
         final int DEFAULT_META_STATE = 0;
         final float DEFAULT_PRECISION_X = 1.0f;
         final float DEFAULT_PRECISION_Y = 1.0f;
         final int DEFAULT_EDGE_FLAGS = 0;
-        MotionEvent event = MotionEvent.obtain(downTime, when, action, x, y, pressure, DEFAULT_SIZE,
+        MotionEvent event = MotionEvent.obtain(downTime, now, action, x, y, pressure, DEFAULT_SIZE,
                 DEFAULT_META_STATE, DEFAULT_PRECISION_X, DEFAULT_PRECISION_Y,
                 4, DEFAULT_EDGE_FLAGS);
         event.setSource(inputSource);
@@ -81,10 +82,12 @@ public class EventUtils {
         tapThreadPoolExecutor.execute(new Runnable() {
             @Override
             public void run() {
-                long now = SystemClock.uptimeMillis();
-                injectMotionEvent(InputDevice.SOURCE_TOUCHSCREEN, MotionEvent.ACTION_DOWN, now, now, x, y, 1.0f,
+                long downtime = SystemClock.uptimeMillis();
+                injectMotionEvent(InputDevice.SOURCE_TOUCHSCREEN, MotionEvent.ACTION_DOWN, downtime, downtime, x, y, 1.0f,
                         0);
-                injectMotionEvent(InputDevice.SOURCE_TOUCHSCREEN, MotionEvent.ACTION_UP, now, now, x, y, 0.0f, 0);
+                long now = SystemClock.uptimeMillis();
+
+                injectMotionEvent(InputDevice.SOURCE_TOUCHSCREEN, MotionEvent.ACTION_UP, downtime, now, x, y, 0.0f, 0);
             }
         });
 

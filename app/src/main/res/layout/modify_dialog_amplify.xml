@@ -6,14 +6,15 @@
     android:layout_height="match_parent">
 
     <ImageView
-        android:layout_toRightOf="@+id/modify_dialog_scale_edit"
-        android:layout_above="@+id/modify_dialog_scale_edit"
+        android:layout_toRightOf="@+id/iv_amplify"
+        android:layout_above="@+id/iv_amplify"
         android:src="@drawable/modify_dialog_tap_click_delete"
         android:id="@+id/modify_dialog_scale_delete"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
+        android:layout_width="15dp"
+        android:layout_height="15dp"/>
 
     <ImageView
+        android:id="@+id/iv_amplify"
         android:background="@drawable/rect_background"
         android:layout_centerInParent="true"
         android:layout_width="30dp"
