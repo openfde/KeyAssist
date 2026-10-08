@@ -3,7 +3,8 @@ package org.chickenhook.restrictionbypass;
 import android.os.Build;
 import android.system.Os;
 import android.util.Log;
-;
+
+import com.fde.keyassist.BuildConfig;
 
 import java.lang.reflect.Method;
 

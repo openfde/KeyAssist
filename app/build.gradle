@@ -1,10 +1,11 @@
-plugins {
-    id 'com.android.application'
-}
+apply plugin: 'com.android.application'
+
 
 android {
+    namespace "com.fde.keyassist"
     compileSdkVersion 34
-    buildToolsVersion "30.0.3"
+    // AGP 8.5 要求 Build Tools >= 34.0.0
+    buildToolsVersion "34.0.0"
 
     defaultConfig {
         applicationId "com.fde.keyassist"
@@ -28,11 +29,21 @@ android {
             storeFile file('plugin.keystore')
             storePassword 'android'
         }
+
+        release {
+            keyAlias 'androiddebugkey'
+            keyPassword 'android'
+            storeFile file('plugin.keystore')
+            storePassword 'android'
+        }
     }
 
+    buildFeatures.buildConfig true
+
+
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
     }
 
     android.applicationVariants.all { variant ->

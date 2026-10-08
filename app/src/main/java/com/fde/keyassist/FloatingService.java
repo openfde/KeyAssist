@@ -457,11 +457,13 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
 //        WindowManager windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
         WindowManager windowManager = (WindowManager) this.getSystemService(WINDOW_SERVICE);
         DisplayMetrics displayMetrics = new DisplayMetrics();
-        windowManager.getDefaultDisplay().getMetrics(displayMetrics);
+        windowManager.getDefaultDisplay().getRealMetrics(displayMetrics);
         params.width = width;
         params.height = height;
         params.x = displayMetrics.widthPixels;
         params.y = displayMetrics.heightPixels;
+        Log.d(TAG, "createFloatWindow: widthPixels = " + displayMetrics.widthPixels);
+        Log.d(TAG, "createFloatWindow: heightPixels = " + displayMetrics.heightPixels);
         params.type = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
         params.gravity = Gravity.TOP | Gravity.START;
         windowManager.addView(view,params);
@@ -473,11 +475,13 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
 //        WindowManager windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
         WindowManager windowManager = (WindowManager) this.getSystemService(WINDOW_SERVICE);
         DisplayMetrics displayMetrics = new DisplayMetrics();
-        windowManager.getDefaultDisplay().getMetrics(displayMetrics);
+        windowManager.getDefaultDisplay().getRealMetrics(displayMetrics);
         params.width = width;
         params.height = height;
         params.x = displayMetrics.widthPixels;
         params.y = displayMetrics.heightPixels;
+        Log.d(TAG, "createWindow: widthPixels = " + displayMetrics.widthPixels);
+        Log.d(TAG, "createWindow: heightPixels = " + displayMetrics.heightPixels);
         params.type = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
         params.gravity = Gravity.TOP | Gravity.START;
         windowManager.addView(view,params);
@@ -695,270 +699,264 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
     @SuppressLint({"NonConstantResourceId", "MissingInflatedId"})
     @Override
     public void onClick(View view) {
-         switch (view.getId()){
-             case R.id.key_mapping_exit:
-                 if(!exitClick){
-                     break;
-                 }
-                 endListenerKey();
-                 applyDialog.cancal();
-                 isApply = false;
+        int id = view.getId();
 
-                 key_mapping_apply_and_cancel.setText(getString(R.string.apply));
-                 closeCursor();
-                 mainWindow.removeView(mainView);
-                 floatWindow.removeView(floatView);
+        if (id == R.id.key_mapping_exit) {
+            if (!exitClick) {
+                return;
+            }
+            endListenerKey();
+            applyDialog.cancal();
+            isApply = false;
 
-                 stopSelf();
-                 break;
+            key_mapping_apply_and_cancel.setText(getString(R.string.apply));
+            closeCursor();
+            mainWindow.removeView(mainView);
+            floatWindow.removeView(floatView);
 
-             case R.id.key_mapping_close_dialog:
-                 if(!editAndCancal){
-                     if(dialogMake){
-                         modifyDialog.setDialogSwitch(true);
-                         dialogMake = !dialogMake;
-                         setDialogBack(true);
-                     }else{
-                         modifyDialog.setDialogSwitch(false);
-                         dialogMake = !dialogMake;
-                         setDialogBack(false);
-                     }
-                 }
-                 break;
+            stopSelf();
 
-             case R.id.key_mapping_open_cursor:
-//                 openCursor();
-                 if(!editAndCancal){
-                     if(cursorMake){
-                         modifyDialog.setCursorSwitch(true);
-                         cursorMake = !cursorMake;
-                         setCursorBack(true);
-                     }else{
-                         modifyDialog.setCursorSwitch(false);
-                         cursorMake = !cursorMake;
-                         setCursorBack(false);
-                     }
-                 }
-                 break;
+        } else if (id == R.id.key_mapping_close_dialog) {
+            if (!editAndCancal) {
+                if (dialogMake) {
+                    modifyDialog.setDialogSwitch(true);
+                    dialogMake = !dialogMake;
+                    setDialogBack(true);
+                } else {
+                    modifyDialog.setDialogSwitch(false);
+                    dialogMake = !dialogMake;
+                    setDialogBack(false);
+                }
+            }
 
+        } else if (id == R.id.key_mapping_open_cursor) {
+//        openCursor();
+            if (!editAndCancal) {
+                if (cursorMake) {
+                    modifyDialog.setCursorSwitch(true);
+                    cursorMake = !cursorMake;
+                    setCursorBack(true);
+                } else {
+                    modifyDialog.setCursorSwitch(false);
+                    cursorMake = !cursorMake;
+                    setCursorBack(false);
+                }
+            }
 
+        } else if (id == R.id.key_mapping_plan_linear) {
+            View dropdownView = LayoutInflater.from(this).inflate(R.layout.dropdown_menu, null);
+            dropdown_menu_add = dropdownView.findViewById(R.id.dropdown_menu_add);
+            dropdown_menu_export = dropdownView.findViewById(R.id.dropdown_menu_export);
+            dropdown_menu_import = dropdownView.findViewById(R.id.dropdown_menu_import);
+            RecyclerView recyclerView = dropdownView.findViewById(R.id.key_mapping_recyclerview);
 
-             case R.id.key_mapping_plan_linear:
-                 View dropdownView = LayoutInflater.from(this).inflate(R.layout.dropdown_menu, null);
-                 dropdown_menu_add = dropdownView.findViewById(R.id.dropdown_menu_add);
-                 dropdown_menu_export = dropdownView.findViewById(R.id.dropdown_menu_export);
-                 dropdown_menu_import = dropdownView.findViewById(R.id.dropdown_menu_import);
-                 RecyclerView recyclerView = dropdownView.findViewById(R.id.key_mapping_recyclerview);
+            plans = LitePal.findAll(Plan.class);
 
-                 plans = LitePal.findAll(Plan.class);
+            PlaySpinnerAdapter adapter = new PlaySpinnerAdapter(plans, key_mapping_plan_text);
+            recyclerView.setAdapter(adapter);
 
-                 PlaySpinnerAdapter adapter = new PlaySpinnerAdapter(plans,key_mapping_plan_text);
-                 recyclerView.setAdapter(adapter);
+            dropdown_menu_export.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    List<String> list = new ArrayList<>();
+                    List<Plan> planList = LitePal.findAll(Plan.class);
+                    for (Plan plan : planList) {
+                        list.add(plan.getPlanName());
+                    }
+                    FileUtil.exportData(list, getApplication());
+                    Toast.makeText(getApplication(), "成功导出文件到根目录keyAssist目录下", Toast.LENGTH_SHORT).show();
+                }
+            });
 
-                 dropdown_menu_export.setOnClickListener(new View.OnClickListener() {
-                     @Override
-                     public void onClick(View view) {
-                         List<String> list = new ArrayList<>();
-                         List<Plan> planList = LitePal.findAll(Plan.class);
-                         for(Plan plan : planList){
-                             list.add(plan.getPlanName());
-                         }
-                         FileUtil.exportData(list,getApplication());
-                         Toast.makeText(getApplication(),"成功导出文件到根目录keyAssist目录下",Toast.LENGTH_SHORT).show();
-                     }
-                 });
+            dropdown_menu_import.setOnClickListener(new View.OnClickListener() {
+                @SuppressLint("NotifyDataSetChanged")
+                @Override
+                public void onClick(View view) {
+                    FileUtil.importData();
+                    plans = LitePal.findAll(Plan.class);
+                    adapter.notifyDataSetChanged();
+                    PlaySpinnerAdapter adapter = new PlaySpinnerAdapter(plans, key_mapping_plan_text);
+                    recyclerView.setAdapter(adapter);
+                }
+            });
 
-                 dropdown_menu_import.setOnClickListener(new View.OnClickListener(){
+            dropdown_menu_add.setOnClickListener(new View.OnClickListener() {
+                @Override
+                @SuppressLint("NotifyDataSetChanged")
+                public void onClick(View view) {
+                    Plan plan = new Plan();
+                    plan.setPlanName("方案");
+                    plan.save();
+                    plans = LitePal.findAll(Plan.class);
+                    adapter.notifyDataSetChanged();
+                    PlaySpinnerAdapter adapter = new PlaySpinnerAdapter(plans, key_mapping_plan_text);
+                    recyclerView.setAdapter(adapter);
+                }
+            });
 
-                     @SuppressLint("NotifyDataSetChanged")
-                     @Override
-                     public void onClick(View view) {
-                         FileUtil.importData();
-                         plans = LitePal.findAll(Plan.class);
-                         adapter.notifyDataSetChanged();
-                         PlaySpinnerAdapter adapter = new PlaySpinnerAdapter(plans,key_mapping_plan_text);
-                         recyclerView.setAdapter(adapter);
-                     }
-                 });
+            recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-                 dropdown_menu_add.setOnClickListener(new View.OnClickListener() {
-                     @Override
-                     @SuppressLint("NotifyDataSetChanged")
-                     public void onClick(View view) {
-                         Plan plan = new Plan();
-                         plan.setPlanName("方案");
-                         plan.save();
-                         plans = LitePal.findAll(Plan.class);
-                         adapter.notifyDataSetChanged();
-                         PlaySpinnerAdapter adapter = new PlaySpinnerAdapter(plans,key_mapping_plan_text);
-                         recyclerView.setAdapter(adapter);
-                     }
-                 });
+            popupWindow = new PopupWindow(dropdownView, key_mapping_plan_linear.getWidth(), ViewGroup.LayoutParams.WRAP_CONTENT, true);
+            popupWindow.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+            popupWindow.setOutsideTouchable(true); // Dismiss the popup when touching outside
+            popupWindow.showAsDropDown(key_mapping_plan_linear, 0, 0, Gravity.NO_GRAVITY);
 
-                 recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        } else if (id == R.id.key_mapping_tap_click) {
+            if (!editAndCancal) {
+//            startModify("方案一");
+                modifyDialog.setEventType(Constant.TAP_CLICK_EVENT); //单击事件
+//            key_mapping_tap_click.setBackground(R.drawable.key_mapping_key_background_click);
+//            key_mapping_tap_click.setBackgroundResource(R.drawable.key_mapping_key_background_click);
+                setButtonBack(key_mapping_tap_click);
+            }
 
-                 popupWindow = new PopupWindow(dropdownView, key_mapping_plan_linear.getWidth(), ViewGroup.LayoutParams.WRAP_CONTENT, true);
-                 popupWindow.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-                 popupWindow.setOutsideTouchable(true); // Dismiss the popup when touching outside
-                 popupWindow.showAsDropDown(key_mapping_plan_linear,0,0,Gravity.NO_GRAVITY);
+        } else if (id == R.id.key_mapping_direct_click) {
+            if (!editAndCancal) {
+//            startModify("方案一");
+                modifyDialog.setEventType(Constant.DIRECTION_KEY); //单击事件
+                setButtonBack(key_mapping_direct_click);
+            }
 
-                 break;
-             case R.id.key_mapping_tap_click:
-                 if(!editAndCancal){
-//                     startModify("方案一");
-                     modifyDialog.setEventType(Constant.TAP_CLICK_EVENT); //单击事件
-//                     key_mapping_tap_click.setBackground(R.drawable.key_mapping_key_background_click);
-//                     key_mapping_tap_click.setBackgroundResource(R.drawable.key_mapping_key_background_click);
-                     setButtonBack(key_mapping_tap_click);
-                 }
-                 break;
-             case R.id.key_mapping_direct_click:
-                 if(!editAndCancal){
-//                     startModify("方案一");
-                     modifyDialog.setEventType(Constant.DIRECTION_KEY); //单击事件
-                     setButtonBack(key_mapping_direct_click);
-                 }
-                 break;
-             case R.id.key_mapping_double_click:
-                 if(!editAndCancal){
-                     modifyDialog.setEventType(Constant.DOUBLE_CLICK_EVENT); //单击事件
-                     setButtonBack(key_mapping_double_click);
-                 }
-                 break;
-             case R.id.key_mapping_amplify:
-                 if(!editAndCancal){
-                     modifyDialog.setEventType(Constant.AMPLIFY);
-                     setButtonBack(key_mapping_amplify);
-                 }
-                 break;
-             case R.id.key_mapping_scale:
-                 if(!editAndCancal){
-                     modifyDialog.setEventType(Constant.SCALE);
-                     setButtonBack(key_mapping_scale);
-                 }
-                 break;
-                 // 应用和取消
-             case R.id.key_mapping_apply_and_cancel:
-                 // 应用
-                 if(!isApply && editAndCancal){
-                     resizeTask();
-                     // 退出和编辑不可使用
-                     exitClick = false;
-                     editClick = false;
-                     key_mapping_edit_cancel.setBackgroundResource(R.drawable.key_mapping_cancel_no_click);
-                     key_mapping_exit.setBackgroundResource(R.drawable.key_mapping_apply_no_click);
+        } else if (id == R.id.key_mapping_double_click) {
+            if (!editAndCancal) {
+                modifyDialog.setEventType(Constant.DOUBLE_CLICK_EVENT); //单击事件
+                setButtonBack(key_mapping_double_click);
+            }
 
-                     startListenerKey();
-                     if(applyDialog != null){
-                         applyDialog.cancal();
-                     }
-                     applyDialog = new ApplyDialog(Constant.planName,this);
-                     keyMappingEntities = applyDialog.applyTapClick();
-                     directMappingEntities = applyDialog.applyDirect();
-                     doubleClickMappingEntities = applyDialog.applyDoubleClick();
-                     scaleMappingEntities = applyDialog.applyScaleClick();
-                     amplifyMappingEntities = applyDialog.applyAmplifyClick();
-                     Boolean b = applyDialog.applyCursor();
-                     if(b){
-                         openCursor();
-                     }else{
-                         closeCursor();
-                     }
-                     Boolean dialog = applyDialog.applyDialog();
-                     if(dialog){
-                         openTaskBar();
-                     }else{
-                         closeTaskbar();
-                     }
-                     isApply = true;
-                     isMainWindow = false;
-                     key_mapping_apply_and_cancel.setText(getString(R.string.cancel));
-                     mainWindow.removeView(mainView);
-                     Adsorption(floatParams);
-                     // 取消
-                 }else{
-                     if(applyDialog!=null) {
-                         if(!applyClick){
-                             break;
-                         }
-                         key_mapping_edit_cancel.setBackgroundResource(R.drawable.key_mapping_cancel);
-                         key_mapping_exit.setTextColor(Color.parseColor("#FFFFFF"));
-                         exitClick = true;
-                         editClick = true;
-                         endListenerKey();
-                         applyDialog.cancal();
-                         isApply = false;
-                         key_mapping_apply_and_cancel.setText(getString(R.string.apply));
-                         closeCursor();
-                     }
-                 }
-                 break;
-             // 隐藏和保存
-             case R.id.key_mapping_hide_save:
-                 setButtonBack(null);
-                 setCursorBack(false);
-                 setDialogBack(false);
-                 if(!editAndCancal) {
-                     applyClick = true;
-                     exitClick = true;
-                     key_mapping_apply_and_cancel.setTextColor(Color.parseColor("#FFFFFF"));
-                     key_mapping_exit.setTextColor(Color.parseColor("#FFFFFF"));
+        } else if (id == R.id.key_mapping_amplify) {
+            if (!editAndCancal) {
+                modifyDialog.setEventType(Constant.AMPLIFY);
+                setButtonBack(key_mapping_amplify);
+            }
 
-                     modifyDialog.save();
-                     key_mapping_edit_cancel.setText(getString(R.string.edit));
-                     isChange = false;
-                     editAndCancal = true;
-                     key_mapping_hide_save.setText(getString(R.string.hide));
-                     saveTask();
+        } else if (id == R.id.key_mapping_scale) {
+            if (!editAndCancal) {
+                modifyDialog.setEventType(Constant.SCALE);
+                setButtonBack(key_mapping_scale);
+            }
 
-                 }else{
-//                     Adsorption(floatParams);
-//                     endListenerKey();
-                     isMainWindow = false;
-                     mainWindow.removeView(mainView);
-                 }
-                 break;
-                 // 编辑和取消
-             case R.id.key_mapping_edit_cancel:
-                 if(!editClick){
-                     break;
-                 }
-                 setButtonBack(null);
-                 setCursorBack(false);
-                 setDialogBack(false);
-                 // 编辑
-                     if(editAndCancal){
-                         applyClick = false;
-                         exitClick = false;
-                         key_mapping_apply_and_cancel.setTextColor(Color.parseColor("#A9A9A9"));
-                         key_mapping_exit.setTextColor(Color.parseColor("#A9A9A9"));
-                         key_mapping_hide_save.setText(getString(R.string.save));
-                         applyDialog.cancal();
-                         isApply = false;
-                         editAndCancal = false;
-                         key_mapping_apply_and_cancel.setText(getString(R.string.apply));
-                         endListenerKey();
-                         key_mapping_edit_cancel.setText(getString(R.string.cancel));
-                         startModify(Constant.planName);
-                         modifyDialog.showView(); //单击事件
-                         setCursorBack(modifyDialog.getCursorSwitch());
-                         setDialogBack(modifyDialog.getDialogSwitch());
-                     }else{
-                         applyClick = true;
-                         exitClick = true;
-                         key_mapping_apply_and_cancel.setTextColor(Color.parseColor("#FFFFFF"));
-                         key_mapping_exit.setTextColor(Color.parseColor("#FFFFFF"));
+            // 应用和取消
+        } else if (id == R.id.key_mapping_apply_and_cancel) {
+            // 应用
+            if (!isApply && editAndCancal) {
+                resizeTask();
+                // 退出和编辑不可使用
+                exitClick = false;
+                editClick = false;
+                key_mapping_edit_cancel.setBackgroundResource(R.drawable.key_mapping_cancel_no_click);
+                key_mapping_exit.setBackgroundResource(R.drawable.key_mapping_apply_no_click);
 
-                         key_mapping_hide_save.setText(getString(R.string.hide));
-                         editAndCancal = true;
-                         key_mapping_edit_cancel.setText(getString(R.string.edit));
-                         modifyDialog.cancel();
-                         isChange = false;
-                     }
-                     break;
-                 }
+                startListenerKey();
+                if (applyDialog != null) {
+                    applyDialog.cancal();
+                }
+                applyDialog = new ApplyDialog(Constant.planName, this);
+                keyMappingEntities = applyDialog.applyTapClick();
+                directMappingEntities = applyDialog.applyDirect();
+                doubleClickMappingEntities = applyDialog.applyDoubleClick();
+                scaleMappingEntities = applyDialog.applyScaleClick();
+                amplifyMappingEntities = applyDialog.applyAmplifyClick();
+                Boolean b = applyDialog.applyCursor();
+                if (b) {
+                    openCursor();
+                } else {
+                    closeCursor();
+                }
+                Boolean dialog = applyDialog.applyDialog();
+                if (dialog) {
+                    openTaskBar();
+                } else {
+                    closeTaskbar();
+                }
+                isApply = true;
+                isMainWindow = false;
+                key_mapping_apply_and_cancel.setText(getString(R.string.cancel));
+                mainWindow.removeView(mainView);
+                Adsorption(floatParams);
 
-         }
+                // 取消
+            } else {
+                if (applyDialog != null) {
+                    if (!applyClick) {
+                        return;
+                    }
+                    key_mapping_edit_cancel.setBackgroundResource(R.drawable.key_mapping_cancel);
+                    key_mapping_exit.setTextColor(Color.parseColor("#FFFFFF"));
+                    exitClick = true;
+                    editClick = true;
+                    endListenerKey();
+                    applyDialog.cancal();
+                    isApply = false;
+                    key_mapping_apply_and_cancel.setText(getString(R.string.apply));
+                    closeCursor();
+                }
+            }
+
+            // 隐藏和保存
+        } else if (id == R.id.key_mapping_hide_save) {
+            setButtonBack(null);
+            setCursorBack(false);
+            setDialogBack(false);
+            if (!editAndCancal) {
+                applyClick = true;
+                exitClick = true;
+                key_mapping_apply_and_cancel.setTextColor(Color.parseColor("#FFFFFF"));
+                key_mapping_exit.setTextColor(Color.parseColor("#FFFFFF"));
+
+                modifyDialog.save();
+                key_mapping_edit_cancel.setText(getString(R.string.edit));
+                isChange = false;
+                editAndCancal = true;
+                key_mapping_hide_save.setText(getString(R.string.hide));
+                saveTask();
+
+            } else {
+//            Adsorption(floatParams);
+//            endListenerKey();
+                isMainWindow = false;
+                mainWindow.removeView(mainView);
+            }
+
+            // 编辑和取消
+        } else if (id == R.id.key_mapping_edit_cancel) {
+            if (!editClick) {
+                return;
+            }
+            setButtonBack(null);
+            setCursorBack(false);
+            setDialogBack(false);
+
+            // 编辑
+            if (editAndCancal) {
+                applyClick = false;
+                exitClick = false;
+                key_mapping_apply_and_cancel.setTextColor(Color.parseColor("#A9A9A9"));
+                key_mapping_exit.setTextColor(Color.parseColor("#A9A9A9"));
+                key_mapping_hide_save.setText(getString(R.string.save));
+                applyDialog.cancal();
+                isApply = false;
+                editAndCancal = false;
+                key_mapping_apply_and_cancel.setText(getString(R.string.apply));
+                endListenerKey();
+                key_mapping_edit_cancel.setText(getString(R.string.cancel));
+                startModify(Constant.planName);
+                modifyDialog.showView(); //单击事件
+                setCursorBack(modifyDialog.getCursorSwitch());
+                setDialogBack(modifyDialog.getDialogSwitch());
+            } else {
+                applyClick = true;
+                exitClick = true;
+                key_mapping_apply_and_cancel.setTextColor(Color.parseColor("#FFFFFF"));
+                key_mapping_exit.setTextColor(Color.parseColor("#FFFFFF"));
+
+                key_mapping_hide_save.setText(getString(R.string.hide));
+                editAndCancal = true;
+                key_mapping_edit_cancel.setText(getString(R.string.edit));
+                modifyDialog.cancel();
+                isChange = false;
+            }
+        }
+    }
 
 
 
@@ -1064,14 +1062,15 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
     }
 
 
-    public static int getScreenWidth(Context context) {
-        WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
-        Display display = wm.getDefaultDisplay();
+    public int getScreenWidth(Context context) {
+        WindowManager windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        windowManager.getDefaultDisplay().getRealMetrics(displayMetrics);
         // 注意：getDisplayMetrics().widthPixels 和 getDisplayMetrics().heightPixels
         // 在Android 3.0以上版本中，当屏幕方向改变时，这两个值会互换。
         // 因此，如果你需要固定的宽度和高度（不考虑屏幕方向），你可能需要做一些额外的检查。
         // 这里我们直接获取widthPixels作为屏幕宽度（在横向模式下可能不是）
-        return display.getWidth(); // 在API 30及以上，建议使用getDisplay().getSize(Point outSize)
+        return displayMetrics.widthPixels; // 在API 30及以上，建议使用getDisplay().getSize(Point outSize)
     }
 
     public static int getScreenHeight(Context context) {

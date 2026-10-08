@@ -12,7 +12,11 @@ buildscript {
     }
     dependencies {
 //        classpath 'com.android.tools.build:gradle:4.0'
-        classpath 'com.android.tools.build:gradle:7.4.2'
+        // app/libs/framework.jar 是 Android 17 的（class 65 / Java 21），必须用 JDK 21 编译；
+        // AGP 8.1.2 的 JdkImageTransform(jlink) 在 JDK 21 下会报
+        // "ModuleTarget is malformed: platformString missing delimiter: android"，
+        // AGP 8.5.2 起正式支持 JDK 21，配套 Gradle 8.7。
+        classpath 'com.android.tools.build:gradle:8.5.2'
 
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle files
