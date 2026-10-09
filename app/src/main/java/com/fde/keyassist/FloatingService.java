@@ -1003,47 +1003,53 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
 
 
 
-    //打开鼠标
-    public void openCursor(){
+    /**
+     * 统一的 FDE 属性设置入口。
+     *
+     * fde.* 属于系统属性，普通 App 进程没有写权限，必须借助 su 执行 setprop；
+     * 之前 openCursor() 走了 su 而 closeCursor() 没走，结果关闭功能/退出应用时
+     * fde.click_as_touch / fde.inject_as_touch 一直停留在 true 状态。
+     */
+    private void setFdeProps(boolean showWaylandCursor, boolean clickAsTouch, boolean injectAsTouch) {
         try {
-
             Process process = Runtime.getRuntime().exec("/system/bin/sh");
             DataOutputStream os = new DataOutputStream(process.getOutputStream());
-
             os.writeBytes("su\n");
-            os.writeBytes("/system/bin/setprop fde.show_wayland_cursor true\n");
-            os.writeBytes("/system/bin/setprop fde.click_as_touch true\n");
-            os.writeBytes("/system/bin/setprop fde.inject_as_touch true\n");
+            os.writeBytes("/system/bin/setprop fde.show_wayland_cursor " + showWaylandCursor + "\n");
+            os.writeBytes("/system/bin/setprop fde.click_as_touch " + clickAsTouch + "\n");
+            os.writeBytes("/system/bin/setprop fde.inject_as_touch " + injectAsTouch + "\n");
             os.writeBytes("exit\n");
             os.flush();
-
             process.waitFor();
-//            Process process = Runtime.getRuntime().exec("/system/bin/sh");
-//            DataOutputStream os = new DataOutputStream(process.getOutputStream());
-//            os.writeBytes("setprop fde.show_wayland_cursor true\n");
-//            os.writeBytes("setprop fde.click_as_touch true\n");
-//            os.writeBytes("setprop fde.inject_as_touch true\n");
-//            os.writeBytes("exit\n");
-//            os.flush();
-//            process.waitFor();
+            Log.i(TAG, "setFdeProps: show_wayland_cursor=" + showWaylandCursor
+                    + ", click_as_touch=" + clickAsTouch + ", inject_as_touch=" + injectAsTouch);
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
     }
+
+    //打开鼠标
+    public void openCursor(){
+        setFdeProps(true, true, true);
+    }
     // 关闭鼠标
     public void closeCursor(){
-        try {
-            Process process = Runtime.getRuntime().exec("/system/bin/sh");
-            DataOutputStream os = new DataOutputStream(process.getOutputStream());
-            os.writeBytes("setprop fde.show_wayland_cursor true\n");
-            os.writeBytes("setprop fde.click_as_touch false\n");
-            os.writeBytes("setprop fde.inject_as_touch false\n");
-            os.writeBytes("exit\n");
-            os.flush();
-            process.waitFor();
-        } catch (IOException | InterruptedException e) {
-            e.printStackTrace();
-        }
+        setFdeProps(true, false, false);
+    }
+
+    @Override
+    public void onDestroy() {
+        // 退出/服务被销毁时复位开关，避免鼠标那一路一直停在"注入模式"
+        // （注意：被 force-stop 或进程被杀时不会走到这里，属性会在重启后恢复默认值）
+        closeCursor();
+        super.onDestroy();
+    }
+
+    @Override
+    public void onTaskRemoved(Intent rootIntent) {
+        // 从最近任务里划掉 App 时也把开关复位
+        closeCursor();
+        super.onTaskRemoved(rootIntent);
     }
 
 
