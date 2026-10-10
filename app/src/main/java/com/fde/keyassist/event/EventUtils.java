@@ -28,6 +28,8 @@ public class EventUtils {
 
 
     // 点击事件线程池
+    // 注意：原来使用 AbortPolicy，快速连按时队列满了会抛 RejectedExecutionException 导致崩溃，
+    // 改为 CallerRunsPolicy 由调用线程兜底执行。
     public static ThreadPoolExecutor tapThreadPoolExecutor = new ThreadPoolExecutor(
             20,
             30,
@@ -35,7 +37,7 @@ public class EventUtils {
             TimeUnit.DAYS,
             new ArrayBlockingQueue<>(10),
             Executors.defaultThreadFactory(),
-            new ThreadPoolExecutor.AbortPolicy());
+            new ThreadPoolExecutor.CallerRunsPolicy());
 
     public static void injectMotionEvent(int inputSource, int action, long downTime, long when,
                                          float x, float y, float pressure, int displayId) {
@@ -106,8 +108,8 @@ public class EventUtils {
         private final float DEFAULT_RATE = 2f; // speed
         private final float DEFAULT_ZOOMOUT_AREA_SIZE = 80; // finger distance
         private final float DEFAULT_ZOOMIN_AREA_SIZE = 200; // finger distance
-        MotionEvent.PointerProperties[] properties;
-        MotionEvent.PointerCoords[] coords;
+        private volatile MotionEvent.PointerProperties[] properties;
+        private volatile MotionEvent.PointerCoords[] coords;
         int source = 0xd002;
         int deviceId = 10;
         private volatile boolean stopped = true;
@@ -140,8 +142,8 @@ public class EventUtils {
             float x2 = center.x + (zoomIn ? DEFAULT_ZOOMIN_AREA_SIZE : DEFAULT_ZOOMOUT_AREA_SIZE);
             float y2 = center.y ; // + DEFAULT_AREA_SIZE;
             float rate = zoomIn ? DEFAULT_RATE : - DEFAULT_RATE;
-            long downTime = SystemClock.uptimeMillis();
-            long eventTime = SystemClock.uptimeMillis();
+            this.downTime = SystemClock.uptimeMillis();
+            this.eventTime = SystemClock.uptimeMillis();
             properties = new MotionEvent.PointerProperties[10];
             coords = new MotionEvent.PointerCoords[10];
             properties[0] = new MotionEvent.PointerProperties();
@@ -175,7 +177,6 @@ public class EventUtils {
                     deviceId, 0, source, 0);
             Device.injectEvent(event, 0, 2);
             while ( (coords[1].x > center.x || !zoomIn) && !stopped){
-                Log.d(TAG, "startZoom():  " + stopped);
 //                coords[0].y += rate; // 第一个触摸点向下移动
                 coords[0].x += rate; // 第一个触摸点向下移动
 //                coords[1].y -= rate; // 第二个触摸点向下移动
@@ -186,6 +187,13 @@ public class EventUtils {
                         properties, coords, 0, 0, 1, 1,
                         deviceId, 0, source, 0);
                 Device.injectEvent(event, 0, 2);
+                try {
+                    // 控制注入速度，避免死循环刷满 InputDispatcher
+                    Thread.sleep(8);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    break;
+                }
             }
         }
 
@@ -203,6 +211,10 @@ public class EventUtils {
         public void stopZoomInner(){
             Log.d(TAG, "stopZoom():  ");
             stopped = true;
+            // 缩放还没真正开始（未构建触摸点）时直接返回，避免空指针
+            if (properties == null || coords == null) {
+                return;
+            }
             eventTime = SystemClock.uptimeMillis();
             MotionEvent event = MotionEvent.obtain(
                     downTime, eventTime,
@@ -270,6 +282,10 @@ public class EventUtils {
             }
             int direct = updateDirection(action, directBit);
             if(direct == 0) {
+                // 没有方向键处于按下状态时，忽略重复的抬起事件，避免重复注入 ACTION_UP
+                if (mDirection == 0) {
+                    return;
+                }
                 batchDroped = true;
                 executor.execute(()->
                         EventUtils.injectMotionEvent(swipeSource, MotionEvent.ACTION_UP,
@@ -399,9 +415,7 @@ public class EventUtils {
 
     public static class ClickController {
         private final ExecutorService executor = Executors.newSingleThreadExecutor();
-        private final ExecutorService service = Executors.newSingleThreadExecutor();
         private volatile boolean stopped = true;
-        private long downTime, eventTime;
 
         private final int source = 0xd002;
         private final int deviceId = 10;
@@ -434,28 +448,20 @@ public class EventUtils {
         }
 
         private void startClickInner() {
+            // 只用一个线程循环注入，避免每 10ms 往另一个线程池丢任务造成任务堆积
             while (!stopped) {
-                performClick();
+                long now = SystemClock.uptimeMillis();
+                injectMotionEvent(InputDevice.SOURCE_TOUCHSCREEN, MotionEvent.ACTION_DOWN, now, now, x, y, 1.0f,
+                        0);
+                injectMotionEvent(InputDevice.SOURCE_TOUCHSCREEN, MotionEvent.ACTION_UP, now, now, x, y, 0.0f, 0);
                 try {
                     Thread.sleep(10);
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
+                    break;
                 }
             }
             stopped = true;
-        }
-
-        private void performClick() {
-            service.execute(new Runnable() {
-                @Override
-                public void run() {
-                    long now = SystemClock.uptimeMillis();
-                    injectMotionEvent(InputDevice.SOURCE_TOUCHSCREEN, MotionEvent.ACTION_DOWN, now, now, x, y, 1.0f,
-                            0);
-                    injectMotionEvent(InputDevice.SOURCE_TOUCHSCREEN, MotionEvent.ACTION_UP, now, now, x, y, 0.0f, 0);
-                }
-            });
-
         }
     }
 

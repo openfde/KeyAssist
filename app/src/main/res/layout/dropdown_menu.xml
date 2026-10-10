@@ -1,48 +1,55 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical"
-    android:gravity="center_horizontal"
-    android:background="#123456"
+    android:background="@drawable/bg_dropdown_menu"
     android:layout_width="match_parent"
-    android:layout_height="200dp">
+    android:layout_height="wrap_content">
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/key_mapping_recyclerview"
-        android:background="#123456"
+        android:paddingTop="4dp"
+        android:paddingBottom="4dp"
+        android:clipToPadding="false"
         android:layout_width="match_parent"
-        android:layout_height="200dp"/>
+        android:layout_height="180dp"/>
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#33FFFFFF"/>
     <LinearLayout
         android:orientation="horizontal"
-        android:layout_marginBottom="10dp"
+        android:gravity="center_vertical"
+        android:paddingTop="4dp"
+        android:paddingBottom="4dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
         <ImageView
             android:layout_weight="1"
-            android:layout_marginBottom="5dp"
-            android:layout_marginTop="10dp"
             android:id="@+id/dropdown_menu_import"
             android:src="@drawable/dropdown_menu_export"
-            android:layout_width="20dp"
-            android:layout_height="20dp"/>
+            android:contentDescription="@string/import_plan"
+            android:padding="8dp"
+            android:layout_width="0dp"
+            android:layout_height="40dp"/>
 
         <ImageView
             android:layout_weight="1"
-            android:layout_marginBottom="5dp"
-            android:layout_marginTop="10dp"
             android:id="@+id/dropdown_menu_add"
             android:src="@drawable/dropdown_menu_add"
-            android:layout_width="20dp"
-            android:layout_height="20dp"/>
+            android:contentDescription="@string/add_plan"
+            android:padding="8dp"
+            android:layout_width="0dp"
+            android:layout_height="40dp"/>
 
 
         <ImageView
             android:layout_weight="1"
-            android:layout_marginBottom="5dp"
-            android:layout_marginTop="10dp"
             android:id="@+id/dropdown_menu_export"
             android:src="@drawable/dropdown_menu_import"
-            android:layout_width="20dp"
-            android:layout_height="20dp"/>
+            android:contentDescription="@string/export_plan"
+            android:padding="8dp"
+            android:layout_width="0dp"
+            android:layout_height="40dp"/>
     </LinearLayout>
 
 </LinearLayout>

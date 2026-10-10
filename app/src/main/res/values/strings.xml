@@ -30,5 +30,10 @@
         6. 点击保存会保存所有按键到对应的方案中 \n
     </string>
     <string name="dialog">turn on the status bar</string>
+    <string name="default_plan_name">Plan</string>
+    <string name="export_success">Exported to the keyAssist folder in the root directory</string>
+    <string name="import_plan">Import scheme</string>
+    <string name="add_plan">Add scheme</string>
+    <string name="export_plan">Export scheme</string>
 
 </resources>

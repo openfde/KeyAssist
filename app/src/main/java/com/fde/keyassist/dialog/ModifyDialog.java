@@ -410,6 +410,18 @@ public class ModifyDialog extends BaseServiceDialog implements View.OnClickListe
 
     }
 
+    // 保存时统一解析当前方案的 planId，不存在则创建，避免每个按键都查一次数据库
+    private Integer getOrCreatePlanId() {
+        List<Plan> plans = LitePal.where("planName = ?", planName).find(Plan.class);
+        if (plans != null && plans.size() >= 1) {
+            return plans.get(0).getId();
+        }
+        Plan plan = new Plan();
+        plan.setPlanName(planName);
+        plan.save();
+        return plan.getId();
+    }
+
     // 保存
     public void save(){
         List<Plan> plans = LitePal.where("planName = ?",planName).find(Plan.class);
@@ -440,7 +452,13 @@ public class ModifyDialog extends BaseServiceDialog implements View.OnClickListe
 
         if(allView != null && !allView.isEmpty()){
             for (View view : allView){
-                windowManager.removeView(view);
+                if (view.isAttachedToWindow()) {
+                    try {
+                        windowManager.removeView(view);
+                    } catch (IllegalArgumentException e) {
+                        e.printStackTrace();
+                    }
+                }
             }
         }
         assert allView != null;
@@ -456,34 +474,22 @@ public class ModifyDialog extends BaseServiceDialog implements View.OnClickListe
     public void saveCursor(){
         CursorEntity cursorEntity = new CursorEntity();
         cursorEntity.setCursorSwitch(cursorSwitch);
-        List<Plan> plans = LitePal.where("planName = ?",planName).find(Plan.class);
-        if(plans != null && plans.size() >=1){
-            cursorEntity.setPlanId(plans.get(0).getId());
-        }else{
-            Plan plan = new Plan();
-            plan.setPlanName(planName);
-            plan.save();
-            cursorEntity.setPlanId(plan.getId());
-        }
+        cursorEntity.setPlanId(getOrCreatePlanId());
         cursorEntity.save();
     }
 
     public void saveDialog(){
         DialogEntity dialogEntity = new DialogEntity();
         dialogEntity.setDialogSwitch(dialogSwitch);
-        List<Plan> plans = LitePal.where("planName = ?",planName).find(Plan.class);
-        if(plans != null && plans.size() >=1){
-            dialogEntity.setPlanId(plans.get(0).getId());
-        }else{
-            Plan plan = new Plan();
-            plan.setPlanName(planName);
-            plan.save();
-            dialogEntity.setPlanId(plan.getId());
-        }
+        dialogEntity.setPlanId(getOrCreatePlanId());
         dialogEntity.save();
     }
 
     public void saveTapEvent(){
+        if (tapView.isEmpty()) {
+            return;
+        }
+        Integer planId = getOrCreatePlanId();
         // 单机事件view
         for (View view : tapView){
             // 清空已有的保存
@@ -499,16 +505,7 @@ public class ModifyDialog extends BaseServiceDialog implements View.OnClickListe
             String keyValue = textView.getText().toString();
             keyMapping.setKeyValue(keyValue);
             keyMapping.setEventType(Constant.TAP_CLICK_EVENT);
-
-            List<Plan> plans = LitePal.where("planName = ?",planName).find(Plan.class);
-            if(plans != null && plans.size() >=1){
-                keyMapping.setPlanId(plans.get(0).getId());
-            }else{
-                Plan plan = new Plan();
-                plan.setPlanName(planName);
-                plan.save();
-                keyMapping.setPlanId(plan.getId());
-            }
+            keyMapping.setPlanId(planId);
 
             // 单个按键
             if(keyValue.length() == 1){
@@ -523,6 +520,10 @@ public class ModifyDialog extends BaseServiceDialog implements View.OnClickListe
 
     // 保存缩放事件
     public void saveScaleEvent(){
+        if (scaleView.isEmpty()) {
+            return;
+        }
+        Integer planId = getOrCreatePlanId();
         // 单机事件view
         for (View view : scaleView){
             // 清空已有的保存
@@ -538,16 +539,7 @@ public class ModifyDialog extends BaseServiceDialog implements View.OnClickListe
             String keyValue = textView.getText().toString();
             keyMapping.setKeyValue(keyValue);
             keyMapping.setEventType(Constant.SCALE);
-
-            List<Plan> plans = LitePal.where("planName = ?",planName).find(Plan.class);
-            if(plans != null && plans.size() >=1){
-                keyMapping.setPlanId(plans.get(0).getId());
-            }else{
-                Plan plan = new Plan();
-                plan.setPlanName(planName);
-                plan.save();
-                keyMapping.setPlanId(plan.getId());
-            }
+            keyMapping.setPlanId(planId);
 
             // 单个按键
             if(keyValue.length() == 1){
@@ -564,6 +556,7 @@ public class ModifyDialog extends BaseServiceDialog implements View.OnClickListe
         if(amplifyView == null || amplifyView.isEmpty()){
             return;
         }
+        Integer planId = getOrCreatePlanId();
         // 单机事件view
         for (View view : amplifyView){
             // 清空已有的保存
@@ -579,16 +572,7 @@ public class ModifyDialog extends BaseServiceDialog implements View.OnClickListe
             String keyValue = textView.getText().toString();
             keyMapping.setKeyValue(keyValue);
             keyMapping.setEventType(Constant.AMPLIFY);
-
-            List<Plan> plans = LitePal.where("planName = ?",planName).find(Plan.class);
-            if(plans != null && plans.size() >=1){
-                keyMapping.setPlanId(plans.get(0).getId());
-            }else{
-                Plan plan = new Plan();
-                plan.setPlanName(planName);
-                plan.save();
-                keyMapping.setPlanId(plan.getId());
-            }
+            keyMapping.setPlanId(planId);
 
             // 单个按键
             if(keyValue.length() == 1){
@@ -603,6 +587,10 @@ public class ModifyDialog extends BaseServiceDialog implements View.OnClickListe
 
     // 保存方向键
     public void saveDirectEvent(){
+         if (directView.isEmpty()) {
+             return;
+         }
+         Integer planId = getOrCreatePlanId();
          for(View view : directView){
              DirectMappingEntity directMappingEntity = new DirectMappingEntity();
              int[] centerPostion = getCenterPostion(view);
@@ -650,24 +638,17 @@ public class ModifyDialog extends BaseServiceDialog implements View.OnClickListe
              }
 
              directMappingEntity.setEventType(Constant.DIRECTION_KEY);
-
-
-             List<Plan> plans = LitePal.where("planName = ?",planName).find(Plan.class);
-             if(plans != null && plans.size() >=1){
-                 directMappingEntity.setPlanId(plans.get(0).getId());
-             }else{
-                 Plan plan = new Plan();
-                 plan.setPlanName(planName);
-                 plan.save();
-                 directMappingEntity.setPlanId(plan.getId());
-             }
-
+             directMappingEntity.setPlanId(planId);
 
              directMappingEntity.save();
          }
     }
     // 保存连击事件
     public void saveDoubleClickEvent(){
+        if (doubleView.isEmpty()) {
+            return;
+        }
+        Integer planId = getOrCreatePlanId();
         // 清空已有的保存
         // 保存KeyMappingEntity
         for(View view : doubleView){
@@ -685,16 +666,7 @@ public class ModifyDialog extends BaseServiceDialog implements View.OnClickListe
             TextView countText = view.findViewById(R.id.modify_dialog_double_click_count);
             String count = countText.getText().toString();
             keyMapping.setCount(Integer.valueOf(count));
-
-            List<Plan> plans = LitePal.where("planName = ?",planName).find(Plan.class);
-            if(plans != null && plans.size() >=1){
-                keyMapping.setPlanId(plans.get(0).getId());
-            }else{
-                Plan plan = new Plan();
-                plan.setPlanName(planName);
-                plan.save();
-                keyMapping.setPlanId(plan.getId());
-            }
+            keyMapping.setPlanId(planId);
 
             // 单个按键
             if(keyValue.length() == 1){
@@ -747,7 +719,8 @@ public class ModifyDialog extends BaseServiceDialog implements View.OnClickListe
             View view = LayoutInflater.from(getContext()).inflate(R.layout.modify_dialog_amplify, null, false);
             TextView modify_dialog_tap_click_edit = view.findViewById(R.id.modify_dialog_scale_edit);
             modify_dialog_tap_click_edit.setText(entity.getKeyValue());
-            scaleView.add(view);
+            // 必须放入 amplifyView，之前误放入 scaleView，导致保存时放大被当成缩小写入
+            amplifyView.add(view);
             allView.add(view);
             eventType = entity.getEventType();
             dragView(view,"");
@@ -895,14 +868,20 @@ public class ModifyDialog extends BaseServiceDialog implements View.OnClickListe
     public void cancel(){
         if(windowManager !=null && allView != null && !allView.isEmpty()){
             for(View view: allView){
-                windowManager.removeView(view);
+                if (view.isAttachedToWindow()) {
+                    try {
+                        windowManager.removeView(view);
+                    } catch (IllegalArgumentException e) {
+                        e.printStackTrace();
+                    }
+                }
             }
             allView.clear();
             tapView.clear();
             directView.clear();
             doubleView.clear();
             scaleView.clear();
-
+            amplifyView.clear();
         }
         dismiss();
 

@@ -18,7 +18,7 @@ public class Constant {
             case 1:
                 return "单击事件";
             case 2:
-                return "双击事件";
+                return "连击事件";
             case 3:
                 return "滑动";
             case 4:
@@ -31,7 +31,11 @@ public class Constant {
                 return "方向键左";
             case 8:
                 return "方向键右";
+            case 9:
+                return "缩小";
+            case 10:
+                return "放大";
         }
-        return null;
+        return "未命中映射(" + eventType + ")";
     }
 }

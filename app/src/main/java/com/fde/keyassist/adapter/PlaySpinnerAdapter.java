@@ -24,9 +24,14 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.fde.keyassist.FloatingService;
 import com.fde.keyassist.R;
+import com.fde.keyassist.entity.AmplifyMappingEntity;
+import com.fde.keyassist.entity.CursorEntity;
+import com.fde.keyassist.entity.DialogEntity;
 import com.fde.keyassist.entity.DirectMappingEntity;
+import com.fde.keyassist.entity.DoubleClickMappingEntity;
 import com.fde.keyassist.entity.KeyMappingEntity;
 import com.fde.keyassist.entity.Plan;
+import com.fde.keyassist.entity.ScaleMappingEntity;
 import com.fde.keyassist.util.Constant;
 
 import org.litepal.LitePal;
@@ -42,6 +47,12 @@ public class PlaySpinnerAdapter extends RecyclerView.Adapter<PlaySpinnerAdapter.
         this.plans = plans;
     }
 
+    @SuppressLint("NotifyDataSetChanged")
+    public void setPlans(List<Plan> newPlans) {
+        this.plans = newPlans;
+        notifyDataSetChanged();
+    }
+
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -53,15 +64,24 @@ public class PlaySpinnerAdapter extends RecyclerView.Adapter<PlaySpinnerAdapter.
     @SuppressLint({"RecyclerView","ClickableViewAccessibility"})
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        holder.key_mapping_plan_text.setText(plans.get(position).getPlanName());
+        Plan plan = plans.get(position);
+        holder.key_mapping_plan_text.setText(plan.getPlanName());
         holder.key_mapping_plan_text.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                // 查找
-                List<Plan> planList = LitePal.where("planName = ?", plans.get(position).getPlanName()).find(Plan.class);
-                if(planList != null && planList.size() >=1){
-                    planList.get(0).setPlanName(holder.key_mapping_plan_text.getText().toString());
-                    planList.get(0).save();
+                // 按 planId 更新，避免把改名前的名字当查询条件导致二次改名失败
+                String newName = holder.key_mapping_plan_text.getText().toString();
+                String oldName = plan.getPlanName();
+                Plan dbPlan = plan.getId() == null ? null : LitePal.find(Plan.class, plan.getId());
+                if (dbPlan != null) {
+                    dbPlan.setPlanName(newName);
+                    dbPlan.save();
+                    // 同步内存中的列表，保证后续绑定的显示名正确
+                    plan.setPlanName(newName);
+                    if (oldName != null && oldName.equals(Constant.planName)) {
+                        Constant.planName = newName;
+                        textView.setText(newName);
+                    }
                 }
                 isClick = true;
                 holder.key_mapping_plan_text.clearFocus();
@@ -110,14 +130,31 @@ public class PlaySpinnerAdapter extends RecyclerView.Adapter<PlaySpinnerAdapter.
             @SuppressLint("NotifyDataSetChanged")
             @Override
             public void onClick(View view) {
-                List<Plan> planList = LitePal.where("planName = ?", holder.key_mapping_plan_text.getText().toString()).find(Plan.class);
+                String planName = holder.key_mapping_plan_text.getText().toString();
+                List<Plan> planList = LitePal.where("planName = ?", planName).find(Plan.class);
                 if(planList!= null && planList.size() >=1){
-                    LitePal.deleteAll(Plan.class, "planName = ?" , planList.get(0).getPlanName());
-                    LitePal.deleteAll(KeyMappingEntity.class, "planId = ?" , planList.get(0).getId().toString());
-                    LitePal.deleteAll(DirectMappingEntity.class, "planId = ?" , planList.get(0).getId().toString());
-                    plans.clear();
-                    plans = LitePal.findAll(Plan.class);
-                    notifyDataSetChanged();
+                    Integer planId = planList.get(0).getId();
+                    String planIdStr = String.valueOf(planId);
+                    // 删除方案时需要同时清掉所有类型的映射，否则会残留孤儿数据
+                    LitePal.delete(Plan.class, planId);
+                    LitePal.deleteAll(KeyMappingEntity.class, "planId = ?", planIdStr);
+                    LitePal.deleteAll(DirectMappingEntity.class, "planId = ?", planIdStr);
+                    LitePal.deleteAll(DoubleClickMappingEntity.class, "planId = ?", planIdStr);
+                    LitePal.deleteAll(ScaleMappingEntity.class, "planId = ?", planIdStr);
+                    LitePal.deleteAll(AmplifyMappingEntity.class, "planId = ?", planIdStr);
+                    LitePal.deleteAll(CursorEntity.class, "planId = ?", planIdStr);
+                    LitePal.deleteAll(DialogEntity.class, "planId = ?", planIdStr);
+                    setPlans(LitePal.findAll(Plan.class));
+                    // 删除的是当前选中的方案时，自动切换到第一个可用方案
+                    if (planName.equals(Constant.planName)) {
+                        if (plans.isEmpty()) {
+                            Constant.planName = "";
+                            textView.setText("");
+                        } else {
+                            Constant.planName = plans.get(0).getPlanName();
+                            textView.setText(Constant.planName);
+                        }
+                    }
                 }
             }
         });

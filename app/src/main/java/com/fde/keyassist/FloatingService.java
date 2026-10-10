@@ -66,6 +66,7 @@ import com.fde.keyassist.entity.Plan;
 import com.fde.keyassist.entity.ScaleMappingEntity;
 import com.fde.keyassist.event.EventUtils;
 import com.fde.keyassist.util.Constant;
+import com.fde.keyassist.util.DensityUtil;
 import com.fde.keyassist.util.FileUtil;
 
 import org.litepal.LitePal;
@@ -80,11 +81,13 @@ import java.io.FileReader;
 import java.io.IOException;
 
 import java.lang.reflect.Field;
-import java.sql.SQLOutput;
 import java.util.ArrayList;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.RejectedExecutionException;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -113,7 +116,9 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
 
     private List<KeyMappingEntity> keyMappingEntities;
 
-    private Integer eventType;
+    // 当前按键命中的映射类型。必须是基本类型并给出默认值，
+    // 否则未命中任何映射时 toEventString(eventType) 拆箱会抛 NullPointerException。
+    private int eventType = -1;
 
     private List<DirectMappingEntity> directMappingEntities;
 
@@ -249,6 +254,8 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
                 | WindowManager.LayoutParams.FLAG_LAYOUT_INSET_DECOR
                 | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN
         ;
+        // 修改 flags 后必须 updateViewLayout 才会生效，否则键盘监听要等到下次拖动浮标才可用
+        floatWindow.updateViewLayout(floatView, floatParams);
 //        floatParams.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
 //                | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
 //                | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
@@ -283,20 +290,22 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
         floatView.setOnKeyListener(new View.OnKeyListener() {
             @Override
             public boolean onKey(View view, int i, KeyEvent keyEvent) {
-                int[] pos = getPosition(i,String.valueOf(keyEvent.getDisplayLabel()));
+                int[] pos = getPosition(i, getKeyValue(keyEvent));
                 Log.d(TAG, "onKey():  eventType :" + Constant.toEventString(eventType) + ", i :" + i + ", keyEvent :" + keyEvent + "");
                 if(pos[0] != -1 && pos[1]!=-1) {
 
                     if (eventType == Constant.TAP_CLICK_EVENT) {
-                        EventUtils.tapClick(pos[0], pos[1]);
+                        // 只在按下时触发一次，之前 ACTION_DOWN/ACTION_UP 各触发一次，会导致一次按键点两下
+                        if (keyEvent.getAction() == KeyEvent.ACTION_DOWN && keyEvent.getRepeatCount() == 0) {
+                            EventUtils.tapClick(pos[0], pos[1]);
+                        }
                     } else if (eventType == Constant.DIRECTION_KEY_UP
                             || eventType == Constant.DIRECTION_KEY_LEFT
                             || eventType == Constant.DIRECTION_KEY_DOWN
                             || eventType == Constant.DIRECTION_KEY_RIGHT) {
                         EventUtils.diretClick(floatView,keyEvent, pos[0], pos[1], eventType);
                     }else if (eventType == Constant.DOUBLE_CLICK_EVENT){
-//                        EventUtils.doubleClick(pos[0], pos[1],curCount);
-                        if(keyEvent.getAction() == KeyEvent.ACTION_DOWN){
+                        if(keyEvent.getAction() == KeyEvent.ACTION_DOWN && keyEvent.getRepeatCount() == 0){
                             EventUtils.ClickController.getInstance()
                                     .setClickPosition(pos[0], pos[1]) // 设置点击位置 (x, y)
                                     .startClick(); // 开始持续点击
@@ -334,6 +343,30 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
                 return true;
             }
         });
+    }
+
+    /**
+     * 将按键事件转换成和 {@link ModifyDialog} 保存时一致的按键文本：
+     * 普通按键为显示标签，组合键为 "CTRL+X" / "ALT+X"。
+     */
+    private static String getKeyValue(KeyEvent event) {
+        int label = event.getDisplayLabel();
+        if (label == 0) {
+            return "";
+        }
+        String key = String.valueOf((char) label);
+        int metaState = event.getMetaState();
+        if ((metaState & KeyEvent.META_CTRL_ON) != 0) {
+            return "CTRL+" + key;
+        }
+        if ((metaState & KeyEvent.META_ALT_ON) != 0) {
+            return "ALT+" + key;
+        }
+        return key;
+    }
+
+    private static boolean matches(String storedKeyValue, String pressedKeyValue) {
+        return storedKeyValue != null && !storedKeyValue.isEmpty() && storedKeyValue.equals(pressedKeyValue);
     }
 
 
@@ -587,11 +620,13 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
     public int[] getPosition(int keycode,String keyValue){
         int x = -1;
         int y = -1;
+        // 每次查询前复位，避免上一次的映射类型残留
+        eventType = -1;
         if(keyMappingEntities != null && !keyMappingEntities.isEmpty()){
             Iterator iterator = keyMappingEntities.iterator();
             while(iterator.hasNext()){
                 KeyMappingEntity keyMapping = (KeyMappingEntity) iterator.next();
-                if(keyMapping.getKeycode() != null && keyMapping.getKeyValue().equals(keyValue)){
+                if(matches(keyMapping.getKeyValue(), keyValue)){
                     x = keyMapping.getX();
                     y = keyMapping.getY();
                     eventType = Constant.TAP_CLICK_EVENT;
@@ -605,7 +640,7 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
             Iterator iterator = doubleClickMappingEntities.iterator();
             while(iterator.hasNext()){
                 DoubleClickMappingEntity keyMapping = (DoubleClickMappingEntity) iterator.next();
-                if(keyMapping.getKeycode() != null && keyMapping.getKeyValue().equals(keyValue)){
+                if(matches(keyMapping.getKeyValue(), keyValue)){
                     x = keyMapping.getX();
                     y = keyMapping.getY();
                     eventType = Constant.DOUBLE_CLICK_EVENT;
@@ -620,22 +655,22 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
             Iterator iterator = directMappingEntities.iterator();
             while(iterator.hasNext()){
                 DirectMappingEntity directMapping = (DirectMappingEntity) iterator.next();
-                if(directMapping.getUpKeycode() != null && directMapping.getUpKeyValue().equals(keyValue)){
+                if(matches(directMapping.getUpKeyValue(), keyValue)){
                     x = directMapping.getX();
                     y = directMapping.getY();
                     eventType = Constant.DIRECTION_KEY_UP;
                     return new int[]{x,y};
-                }else if(directMapping.getDownKeycode() != null &&directMapping.getDownKeyValue().equals(keyValue)){
+                }else if(matches(directMapping.getDownKeyValue(), keyValue)){
                     x = directMapping.getX();
                     y = directMapping.getY();
                     eventType = Constant.DIRECTION_KEY_DOWN;
                     return new int[]{x,y};
-                }else if(directMapping.getLeftKeycode() != null && directMapping.getLeftKeyValue().equals(keyValue)){
+                }else if(matches(directMapping.getLeftKeyValue(), keyValue)){
                     x = directMapping.getX();
                     y = directMapping.getY();
                     eventType = Constant.DIRECTION_KEY_LEFT;
                     return new int[]{x,y};
-                }else if(directMapping.getRightKeycode() != null && directMapping.getRightKeyValue().equals(keyValue)){
+                }else if(matches(directMapping.getRightKeyValue(), keyValue)){
                     x = directMapping.getX();
                     y = directMapping.getY();
                     eventType = Constant.DIRECTION_KEY_RIGHT;
@@ -649,7 +684,7 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
             Iterator iterator = scaleMappingEntities.iterator();
             while(iterator.hasNext()){
                 ScaleMappingEntity keyMapping = (ScaleMappingEntity) iterator.next();
-                if(keyMapping.getKeycode() != null && keyMapping.getKeyValue().equals(keyValue)){
+                if(matches(keyMapping.getKeyValue(), keyValue)){
                     x = keyMapping.getX();
                     y = keyMapping.getY();
                     eventType = Constant.SCALE;
@@ -662,7 +697,7 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
             Iterator iterator = amplifyMappingEntities.iterator();
             while(iterator.hasNext()){
                 AmplifyMappingEntity keyMapping = (AmplifyMappingEntity) iterator.next();
-                if(keyMapping.getKeycode() != null && keyMapping.getKeyValue().equals(keyValue)){
+                if(matches(keyMapping.getKeyValue(), keyValue)){
                     x = keyMapping.getX();
                     y = keyMapping.getY();
                     eventType = Constant.AMPLIFY;
@@ -684,9 +719,21 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
                 }
             });
             modifyDialog.show();
-            mainWindow.removeView(mainView);
+            removeViewSafely(mainWindow, mainView);
             mainWindow.addView(mainView,mainParams);
             isChange = true;
+        }
+    }
+
+    // 窗口可能已经被移除，直接 removeView 会抛 IllegalArgumentException，这里统一做保护
+    private void removeViewSafely(WindowManager windowManager, View view) {
+        if (windowManager == null || view == null || !view.isAttachedToWindow()) {
+            return;
+        }
+        try {
+            windowManager.removeView(view);
+        } catch (IllegalArgumentException | NullPointerException e) {
+            Log.w(TAG, "removeViewSafely: " + e);
         }
     }
 
@@ -711,8 +758,9 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
 
             key_mapping_apply_and_cancel.setText(getString(R.string.apply));
             closeCursor();
-            mainWindow.removeView(mainView);
-            floatWindow.removeView(floatView);
+            isMainWindow = false;
+            removeViewSafely(mainWindow, mainView);
+            removeViewSafely(floatWindow, floatView);
 
             stopSelf();
 
@@ -744,62 +792,7 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
             }
 
         } else if (id == R.id.key_mapping_plan_linear) {
-            View dropdownView = LayoutInflater.from(this).inflate(R.layout.dropdown_menu, null);
-            dropdown_menu_add = dropdownView.findViewById(R.id.dropdown_menu_add);
-            dropdown_menu_export = dropdownView.findViewById(R.id.dropdown_menu_export);
-            dropdown_menu_import = dropdownView.findViewById(R.id.dropdown_menu_import);
-            RecyclerView recyclerView = dropdownView.findViewById(R.id.key_mapping_recyclerview);
-
-            plans = LitePal.findAll(Plan.class);
-
-            PlaySpinnerAdapter adapter = new PlaySpinnerAdapter(plans, key_mapping_plan_text);
-            recyclerView.setAdapter(adapter);
-
-            dropdown_menu_export.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    List<String> list = new ArrayList<>();
-                    List<Plan> planList = LitePal.findAll(Plan.class);
-                    for (Plan plan : planList) {
-                        list.add(plan.getPlanName());
-                    }
-                    FileUtil.exportData(list, getApplication());
-                    Toast.makeText(getApplication(), "成功导出文件到根目录keyAssist目录下", Toast.LENGTH_SHORT).show();
-                }
-            });
-
-            dropdown_menu_import.setOnClickListener(new View.OnClickListener() {
-                @SuppressLint("NotifyDataSetChanged")
-                @Override
-                public void onClick(View view) {
-                    FileUtil.importData();
-                    plans = LitePal.findAll(Plan.class);
-                    adapter.notifyDataSetChanged();
-                    PlaySpinnerAdapter adapter = new PlaySpinnerAdapter(plans, key_mapping_plan_text);
-                    recyclerView.setAdapter(adapter);
-                }
-            });
-
-            dropdown_menu_add.setOnClickListener(new View.OnClickListener() {
-                @Override
-                @SuppressLint("NotifyDataSetChanged")
-                public void onClick(View view) {
-                    Plan plan = new Plan();
-                    plan.setPlanName("方案");
-                    plan.save();
-                    plans = LitePal.findAll(Plan.class);
-                    adapter.notifyDataSetChanged();
-                    PlaySpinnerAdapter adapter = new PlaySpinnerAdapter(plans, key_mapping_plan_text);
-                    recyclerView.setAdapter(adapter);
-                }
-            });
-
-            recyclerView.setLayoutManager(new LinearLayoutManager(this));
-
-            popupWindow = new PopupWindow(dropdownView, key_mapping_plan_linear.getWidth(), ViewGroup.LayoutParams.WRAP_CONTENT, true);
-            popupWindow.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-            popupWindow.setOutsideTouchable(true); // Dismiss the popup when touching outside
-            popupWindow.showAsDropDown(key_mapping_plan_linear, 0, 0, Gravity.NO_GRAVITY);
+            showPlanPopup();
 
         } else if (id == R.id.key_mapping_tap_click) {
             if (!editAndCancal) {
@@ -871,7 +864,7 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
                 isApply = true;
                 isMainWindow = false;
                 key_mapping_apply_and_cancel.setText(getString(R.string.cancel));
-                mainWindow.removeView(mainView);
+                removeViewSafely(mainWindow, mainView);
                 Adsorption(floatParams);
 
                 // 取消
@@ -914,7 +907,7 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
 //            Adsorption(floatParams);
 //            endListenerKey();
                 isMainWindow = false;
-                mainWindow.removeView(mainView);
+                removeViewSafely(mainWindow, mainView);
             }
 
             // 编辑和取消
@@ -960,6 +953,63 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
 
 
 
+    // 方案下拉列表：同一个 popup 先关闭再展开，导入/新增后复用同一个 adapter 刷新
+    private void showPlanPopup() {
+        if (popupWindow != null && popupWindow.isShowing()) {
+            popupWindow.dismiss();
+            return;
+        }
+        View dropdownView = LayoutInflater.from(this).inflate(R.layout.dropdown_menu, null);
+        dropdown_menu_add = dropdownView.findViewById(R.id.dropdown_menu_add);
+        dropdown_menu_export = dropdownView.findViewById(R.id.dropdown_menu_export);
+        dropdown_menu_import = dropdownView.findViewById(R.id.dropdown_menu_import);
+        RecyclerView recyclerView = dropdownView.findViewById(R.id.key_mapping_recyclerview);
+
+        plans = LitePal.findAll(Plan.class);
+        if (plans == null) {
+            plans = new ArrayList<>();
+        }
+
+        PlaySpinnerAdapter adapter = new PlaySpinnerAdapter(plans, key_mapping_plan_text);
+        recyclerView.setAdapter(adapter);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+
+        dropdown_menu_export.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                List<String> list = new ArrayList<>();
+                for (Plan plan : LitePal.findAll(Plan.class)) {
+                    list.add(plan.getPlanName());
+                }
+                FileUtil.exportData(list, getApplication());
+                Toast.makeText(getApplication(), getString(R.string.export_success), Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        dropdown_menu_import.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                FileUtil.importData();
+                adapter.setPlans(LitePal.findAll(Plan.class));
+            }
+        });
+
+        dropdown_menu_add.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Plan plan = new Plan();
+                plan.setPlanName(getString(R.string.default_plan_name));
+                plan.save();
+                adapter.setPlans(LitePal.findAll(Plan.class));
+            }
+        });
+
+        popupWindow = new PopupWindow(dropdownView, key_mapping_plan_linear.getWidth(), ViewGroup.LayoutParams.WRAP_CONTENT, true);
+        popupWindow.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        popupWindow.setOutsideTouchable(true); // Dismiss the popup when touching outside
+        popupWindow.showAsDropDown(key_mapping_plan_linear, 0, 0, Gravity.NO_GRAVITY);
+    }
+
     @Override
     public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
         String selectedItem = adapterView.getItemAtPosition(i).toString();
@@ -1003,6 +1053,9 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
 
 
 
+    // 属性设置在后台执行，避免 su + waitFor 阻塞主线程造成卡顿/ANR
+    private final ExecutorService fdePropsExecutor = Executors.newSingleThreadExecutor();
+
     /**
      * 统一的 FDE 属性设置入口。
      *
@@ -1012,19 +1065,34 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
      */
     private void setFdeProps(boolean showWaylandCursor, boolean clickAsTouch, boolean injectAsTouch) {
         try {
-            Process process = Runtime.getRuntime().exec("/system/bin/sh");
-            DataOutputStream os = new DataOutputStream(process.getOutputStream());
-            os.writeBytes("su\n");
-            os.writeBytes("/system/bin/setprop fde.show_wayland_cursor " + showWaylandCursor + "\n");
-            os.writeBytes("/system/bin/setprop fde.click_as_touch " + clickAsTouch + "\n");
-            os.writeBytes("/system/bin/setprop fde.inject_as_touch " + injectAsTouch + "\n");
-            os.writeBytes("exit\n");
-            os.flush();
-            process.waitFor();
-            Log.i(TAG, "setFdeProps: show_wayland_cursor=" + showWaylandCursor
-                    + ", click_as_touch=" + clickAsTouch + ", inject_as_touch=" + injectAsTouch);
-        } catch (IOException | InterruptedException e) {
-            e.printStackTrace();
+        fdePropsExecutor.execute(new Runnable() {
+            @Override
+            public void run() {
+                Process process = null;
+                try {
+                    process = Runtime.getRuntime().exec("/system/bin/sh");
+                    DataOutputStream os = new DataOutputStream(process.getOutputStream());
+                    os.writeBytes("su\n");
+                    os.writeBytes("/system/bin/setprop fde.show_wayland_cursor " + showWaylandCursor + "\n");
+                    os.writeBytes("/system/bin/setprop fde.click_as_touch " + clickAsTouch + "\n");
+                    os.writeBytes("/system/bin/setprop fde.inject_as_touch " + injectAsTouch + "\n");
+                    os.writeBytes("exit\n");
+                    os.flush();
+                    process.waitFor();
+                    Log.i(TAG, "setFdeProps: show_wayland_cursor=" + showWaylandCursor
+                            + ", click_as_touch=" + clickAsTouch + ", inject_as_touch=" + injectAsTouch);
+                } catch (IOException | InterruptedException e) {
+                    e.printStackTrace();
+                } finally {
+                    if (process != null) {
+                        process.destroy();
+                    }
+                }
+            }
+        });
+        } catch (RejectedExecutionException e) {
+            // 服务已销毁时 executor 被 shutdown，此时忽略即可
+            Log.w(TAG, "setFdeProps: executor already shut down");
         }
     }
 
@@ -1042,6 +1110,10 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
         // 退出/服务被销毁时复位开关，避免鼠标那一路一直停在"注入模式"
         // （注意：被 force-stop 或进程被杀时不会走到这里，属性会在重启后恢复默认值）
         closeCursor();
+        removeViewSafely(mainWindow, mainView);
+        removeViewSafely(floatWindow, floatView);
+        isMainWindow = false;
+        fdePropsExecutor.shutdown();
         super.onDestroy();
     }
 
@@ -1049,22 +1121,34 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
     public void onTaskRemoved(Intent rootIntent) {
         // 从最近任务里划掉 App 时也把开关复位
         closeCursor();
+        removeViewSafely(mainWindow, mainView);
+        removeViewSafely(floatWindow, floatView);
+        isMainWindow = false;
         super.onTaskRemoved(rootIntent);
     }
 
 
     // 吸附
     public void Adsorption(WindowManager.LayoutParams params){
+        if (params == null || floatView == null || floatWindow == null) {
+            return;
+        }
         int width = getScreenWidth(this);
-        int heigh = getScreenHeight(this);
+        int height = getScreenHeight(this);
+        int iconWidth = floatView.getWidth() > 0 ? floatView.getWidth() : DensityUtil.dip2px(this, 50);
+        int iconHeight = floatView.getHeight() > 0 ? floatView.getHeight() : iconWidth;
 
+        // 保证图标始终停留在屏幕内，避免拖出去之后找不回来
+        params.y = Math.max(0, Math.min(params.y, height - iconHeight));
         if(params.x + 800 > width){
             // 隐藏图标
             params.flags =params.flags
                     | WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS;
-            params.x = (int)(width - floatView.getWidth()/4) ;
-            floatWindow.updateViewLayout(floatView, params);
+            params.x = (int)(width - iconWidth/4) ;
+        } else {
+            params.x = Math.max(0, Math.min(params.x, width - iconWidth));
         }
+        floatWindow.updateViewLayout(floatView, params);
     }
 
 
@@ -1081,8 +1165,9 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
 
     public static int getScreenHeight(Context context) {
         WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
-        Display display = wm.getDefaultDisplay();
-        return display.getHeight(); // 同上，注意高度和宽度的互换问题
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        wm.getDefaultDisplay().getRealMetrics(displayMetrics);
+        return displayMetrics.heightPixels; // 和 getScreenWidth 一致，取真实屏幕高度
     }
 
     // 得到排名第一的活动
@@ -1103,6 +1188,9 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
         File dataDirectory = Environment.getDataDirectory();
         File launchParams = new File(dataDirectory,"system_ce/0/launch_params");
         File[] files = launchParams.listFiles();
+        if (files == null) {
+            return null;
+        }
         for(File file : files){
             Log.d("filename", "listXml: "+file.getName());
             if(file.getName().contains(packageName) && file.getName().contains(className)) {
@@ -1115,6 +1203,9 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
     @SuppressLint("BlockedPrivateApi")
     public void resizeTask(){
         ActivityManager.RunningTaskInfo start = getStartInfo();
+        if (start == null) {
+            return;
+        }
         String packageName = "";
         String className = "";
         try {
@@ -1123,15 +1214,16 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
                 realActivityField = TaskInfo.class.getDeclaredField("realActivity");
             }
+            if (realActivityField == null) {
+                return;
+            }
             realActivityField.setAccessible(true); // 绕过访问权限控制
-            if (start != null) {
-                ComponentName realActivity = (ComponentName) realActivityField.get(start);
-                if (realActivity != null) {
-                    packageName = realActivity.getPackageName();
-                    className = realActivity.getShortClassName();
-                } else {
-                    Log.d("RealActivity", "realActivity is null");
-                }
+            ComponentName realActivity = (ComponentName) realActivityField.get(start);
+            if (realActivity != null) {
+                packageName = realActivity.getPackageName();
+                className = realActivity.getShortClassName();
+            } else {
+                Log.d("RealActivity", "realActivity is null");
             }
         } catch (NoSuchFieldException | IllegalAccessException e) {
             e.printStackTrace();
@@ -1145,10 +1237,15 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
             // 2. 创建一个整数数组来存储转换后的数字
             int[] numbers = new int[parts.length];
             // 3. 遍历字符串数组，将每个部分转换为整数
-            for (int i = 0; i < parts.length; i++) {
-                numbers[i] = Integer.parseInt(parts[i]);
+            try {
+                for (int i = 0; i < parts.length; i++) {
+                    numbers[i] = Integer.parseInt(parts[i]);
+                }
+            } catch (NumberFormatException e) {
+                Log.w(TAG, "resizeTask: invalid bounds " + bounds);
+                return;
             }
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && numbers.length >= 4) {
                 taskManager.resizeTask(start.taskId,new Rect(numbers[0],numbers[1],numbers[2],numbers[3]));
             }
         }
@@ -1168,14 +1265,16 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
                 if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
                     realActivityField = TaskInfo.class.getDeclaredField("realActivity");
                 }
-                realActivityField.setAccessible(true); // 绕过访问权限控制
-                if (start != null) {
-                    ComponentName realActivity = (ComponentName) realActivityField.get(start);
-                    if (realActivity != null) {
-                        packageName = realActivity.getPackageName();
-                        className = realActivity.getShortClassName();
-                    } else {
-                        Log.d("RealActivity", "realActivity is null");
+                if (realActivityField != null) {
+                    realActivityField.setAccessible(true); // 绕过访问权限控制
+                    if (start != null) {
+                        ComponentName realActivity = (ComponentName) realActivityField.get(start);
+                        if (realActivity != null) {
+                            packageName = realActivity.getPackageName();
+                            className = realActivity.getShortClassName();
+                        } else {
+                            Log.d("RealActivity", "realActivity is null");
+                        }
                     }
                 }
             } catch (NoSuchFieldException | IllegalAccessException e) {
@@ -1226,6 +1325,9 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
     public void openTaskBar(){
 //        floatParams.flags = floatParams.flags | WindowManager.LayoutParams.FLAG_FULLSCREEN;
 //        floatWindow.updateViewLayout(floatView, floatParams);
+        if (!(floatView.getParent() instanceof ViewRootImpl)) {
+            return;
+        }
         ViewRootImpl obj = (ViewRootImpl) floatView.getParent();
         Class c = obj.getClass();
         try{
@@ -1241,6 +1343,9 @@ public class FloatingService extends Service implements View.OnClickListener,Ada
 
 
     public void closeTaskbar(){
+        if (!(floatView.getParent() instanceof ViewRootImpl)) {
+            return;
+        }
         ViewRootImpl obj = (ViewRootImpl) floatView.getParent();
         Class c = obj.getClass();
         try{

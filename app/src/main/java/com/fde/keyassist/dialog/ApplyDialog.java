@@ -275,7 +275,14 @@ public class ApplyDialog {
     public void cancal(){
         if(windowManager!=null && allView!=null && !allView.isEmpty()){
             for(View view: allView){
-                windowManager.removeView(view);
+                // 已分离的 view 再 remove 会抛 IllegalArgumentException，做下保护
+                if(view.isAttachedToWindow()){
+                    try {
+                        windowManager.removeView(view);
+                    } catch (IllegalArgumentException e) {
+                        e.printStackTrace();
+                    }
+                }
             }
             allView.clear();
         }
